@@ -138,3 +138,5 @@ build/
 .cproject
 .pyproject
 .pydevproject
+.idea
+.unittests
