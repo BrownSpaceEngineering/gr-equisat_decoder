@@ -38,15 +38,15 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
     ST_IN_BLOCKS = 2 # waiting to fill block buffer from incoming
 
     # packet layout constants
-    HEADER_LEN = 25 # symbols
+    HEADER_LEN = 22 # symbols
     BLOCK_LEN = 80 # symbols
     # largest possible/smallest acceptable preamble length (for starting to parse packet)
-    MAX_PREAMBLE_LEN = 184 # symbols
+    MAX_PREAMBLE_LEN = 185 # symbols
     MIN_PREAMBLE_LEN = 92 # symbols; must be mult of 4
 
     # packet/preamble detection constants
     # percentage of first symbol in pair that second must be within to be "the same"
-    SYM_SIMILARITY_THRESH = 0.125
+    SYM_SIMILARITY_THRESH = 0.33
 
     def __init__(self):
         gr.basic_block.__init__(self,
@@ -55,8 +55,8 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
             out_sig=[np.uint32]) # only need one byte but GNU radio needs same input/output size
 
         # set enough history to be large enough to store a ful premable
-        self.NEW_DATA_INDEX = self.MAX_PREAMBLE_LEN
-        self.set_history(self.NEW_DATA_INDEX)
+        self.NUM_OLD_DATA = self.MAX_PREAMBLE_LEN
+        self.set_history(self.NUM_OLD_DATA)
 
         # the current state in the sequence of reading a packet
         self.state = self.ST_SEARCHING
@@ -70,105 +70,82 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
         # buffer to hold incoming block data for a single block
         self.block_buf = np.empty(self.BLOCK_LEN)
         self.block_buf_i = 0 # current index in buf
-        self.decoded_blocks = 0 # number of blocks decoded
+        self.num_decoded_blocks = 0 # number of blocks decoded
 
 
     def forecast(self, noutput_items, ninput_items_required):
         """ Called by GNU radio to determine how many input items must be
         delivered to produce a given number of output items.
         """
-        # setup size of input_items[i] for work call
-        for i in range(len(ninput_items_required)):
-            # TODO: for each byte output we need
-            ninput_items_required[i] = noutput_items
-
-            # TODO: use set_output_multiple??
-
+        # TODO: just a rough estimate; it takes 80 symbols for 18 bytes
+        ninput_items_required[0] = (1887*noutput_items)/356 #self.MAX_PREAMBLE_LEN + self.HEADER_LEN + (80*noutput_items)/(18*noutput_items)
+        # TODO: use set_output_multiple??
 
     def general_work(self, input_items, output_items):
-        """ Called by GNU Radio on input stream """
-        # NOTE: input_items always includes self.MAX_PREAMBLE_LEN "old" bytes
+        """ Called by GNU Radio with input stream """
+        # NOTE: input_items always includes self.NUM_OLD_DATA "old" bytes
         # we've already read, and the rest are new (see set_history above)
         inpt = input_items[0]
-        # finite state machine:
-        if self.state is self.ST_SEARCHING:
-            # if searching, check for start of preamble and
-            # set up for start of packet if found
-            maybe_preamble = inpt[:self.MAX_PREAMBLE_LEN]
-            found, start, end, high, low = self.check_for_preamble(maybe_preamble)
 
+        # finite state machine, with the ability to possibly transition through
+        # all states in one iteration (if we get a full packet in inpt)
+        start_i = self.NUM_OLD_DATA-1 # where current state should start in input
+        if self.state is self.ST_SEARCHING:
+            # reset state variables when we start searching
+            self.header_syms_read = 0
+            self.num_decoded_blocks = 0
+            self.block_buf_i = 0
+
+            # if searching, check for start of preamble in the HISTORY and
+            # set up for start of packet if found
+            found, start, end, high, low = self.check_for_preamble(inpt)
             if found:
                 # if preamble is found, setup packet state
                 self.high = high
                 self.low = low
 
-                # then, skip header bytes and try to read the
-                # first block after that
-
-
-                # NOTE: because we check every time and bytes
-                # are shifted in one at a time, TODO: is it?
-                # we know the preamble is just aligned with the end
-
-
-                self.header_syms_read = 0
+                # now, try and start reading the header (reset start_i to wherever the preamble ended)
+                # note this should never be smaller than self.NEW_DATA_INDEX, so start_i will be increasing
                 self.state = self.ST_IN_HEADER
-                # (continue down to ST_IN_HEADER case)
+                start_i = end
+                # continue down into ST_IN_HEADER case (it'll check if there's data on the header)
             else:
                 return 0
 
         if self.state == self.ST_IN_HEADER:
-            # calculate the number of bytes that have been read since the end
-            # of the preamble, including both the the old ones in the
-            # historical part of the buffer and the new ones in the second half
-            # i.e.:
-            #                               V post_header_index
-            # |<-self.self.NEW_DATA_INDEX->|<--rest of buffer----->|
-            # |       |  preamble    | head|r |  block 0  ....     |
-            #                        |<--->| self.header_syms_read
-            #                        |<------>| self.HEADER_LEN
-            post_header_index = self.NEW_DATA_INDEX + self.HEADER_LEN - self.header_syms_read
-            if post_header_index < len(inpt):
-                # if we have more than the header's worth of bytes,
-                # we can start adding to the first block
-                self.block_buf_i = 0
-                self.decoded_blocks = 0
-                out, at_end, self.block_buf_i = self.process_blocks(inpt[post_header_index:],
-                                                                    self.block_buf, self.block_buf_i, self.high, self.low)
-
-                if at_end:
-                    # if we happen to get an entire packet in one buffer
-                    self.state = self.ST_SEARCHING
-                else:
-                    # otherwise, continue reading blocks
-                    self.state = self.ST_IN_BLOCKS
-
-                output_items[0] = out
-                return len(out)
-
-            elif post_header_index == len(inpt):
-                # if we just barely got the header,
-                # start on the blocks immediately next time
+            # reset our buffer to be just that after preamble (if the preamble was in this input)
+            rem = inpt[start_i:]
+            # check if the new data is enough to complete the header
+            header_remaining = self.HEADER_LEN - self.header_syms_read
+            if len(rem) >= header_remaining:
+                # move onto blocks, starting past end of header
                 self.state = self.ST_IN_BLOCKS
-                return 0
-
+                start_i += header_remaining
             else:
-                # if we only got header bytes, wait for more  later
-                self.state = self.ST_IN_HEADER
-                self.header_syms_read += len(inpt) - self.NEW_DATA_INDEX # new bytes
+                # state is still ST_IN_HEADER, just note we read some more
+                self.header_syms_read += len(rem)
                 return 0
 
-        elif self.state == self.ST_IN_BLOCKS:
-            # process all _new_ data as blocks
-            out, dec_blocks, self.block_buf_i = self.process_blocks(inpt[self.NEW_DATA_INDEX:],
-                self.block_buf, self.block_buf_i, self.high, self.low)
-            self.decoded_blocks += dec_blocks
-            # TODO: just reset if we've exceeded a number of blocks
-            # (later we'll figure out how to read the length from the header)
-            if self.decoded_blocks > 350/18: # 350 bytes
+        if self.state == self.ST_IN_BLOCKS:
+            # just reset if we've exceeded a number of blocks
+            # TODO: later we'll figure out how to read the length from the header
+            max_blocks = 350/18 # 350 bytes = 19.4 = 20 blocks
+
+            # process all new/remaining data as blocks (we may have read both header and preamble out of this)
+            rem = inpt[start_i:]
+            out, dec_blocks, self.block_buf_i = self.process_blocks(rem,
+                self.block_buf, self.block_buf_i, max_blocks, self.high, self.low)
+
+            # in the special case of the first block, ignore the first 5 bytes (these are apparently overhead)
+            if self.num_decoded_blocks == 0 and len(out) > 5:
+                out = out[5:]
+
+            self.num_decoded_blocks += dec_blocks
+            if self.num_decoded_blocks > max_blocks:
                 self.state = self.ST_SEARCHING
 
             output_items[0] = out
+            print(xdl_micro_4fsk_decoder._bytearr_to_string(out))
             return len(out)
 
         else: # revert
@@ -193,7 +170,7 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
         found_first = False
         i = 0
         while i < len(inpt)-4:
-            if xdl_micro_4fsk_decoder.is_preamble_cycle(inpt, i, sym_sim_thresh):
+            if xdl_micro_4fsk_decoder._is_preamble_cycle(inpt, i, sym_sim_thresh):
                 # (note start if first found)
                 if not found_first:
                     start = i
@@ -224,13 +201,11 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
             # (two symbols per cycle)
             high = high_sum / (2 * cycle_count)
             low = low_sum / (2 * cycle_count)
-            print(high, low)
-            print(inpt[start:end])
             return True, start, end, high, low
 
 
     @staticmethod
-    def is_preamble_cycle(inpt, i, sym_sim_thresh):
+    def _is_preamble_cycle(inpt, i, sym_sim_thresh):
         """ Checks if the set of 4 raw values in inpt starting at i
         resemble a preamble cycle up to sim_thresh """
         pair1_close = abs(inpt[i] - inpt[i+1]) <= sym_sim_thresh * abs(inpt[i])
@@ -242,39 +217,48 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
     ### Block/packet handling ###
 
     @staticmethod
-    def process_blocks(block_inpt, block_buf, block_buf_i, high, low, block_len=BLOCK_LEN):
+    def process_blocks(block_inpt, block_buf, block_buf_i, max_blocks, high, low):
         """ Adds data from the given input to the given block buffer
         (starting at the given index in the block buffer),
-        decoding multiple blocks and producing output if necessary.
+        decoding multiple blocks (up to max_blocks) and producing output if necessary.
         Also checks based on symbols whether to terminate
         Returns any such data, the count of blocks decoded, and the new block_buf_i
         """
-        out = np.empty((1, 18)) # decoded bytes per one block
-        block_inpt_i = 0
+        out = np.empty(0) # decoded bytes per one block
         dec_blocks = 0
-        # transfer remaining input into buffer until full for decoding
-        while block_inpt_i < len(block_inpt):
-            cur_block_remaining = block_len - block_buf_i
-            block_inpt_remaining = len(block_inpt) - block_inpt_i
-            if cur_block_remaining > block_inpt_remaining:
-                # if we don't have enough to fill up the block,
-                # fill up what we can and return
-                block_buf[block_buf_i:(block_buf_i+block_inpt_remaining)] = block_inpt[block_inpt_i:]
-                block_buf_i = block_buf_i+block_inpt_remaining
-                block_inpt_i = len(block_inpt) # return now
+        inpt_rem = block_inpt
 
-            else:
-                # if we still need to fill up some more before
-                # decoding, do so
-                if cur_block_remaining < block_inpt_remaining:
-                    # if we can fill up a block, fill it up and then decode it
-                    block_buf[block_buf_i:block_len] = block_inpt[block_inpt_i:(block_inpt_i+cur_block_remaining)]
-                    block_inpt_i = block_inpt_i+cur_block_remaining
+        # keep filling buffer until we either run out of input
+        # or decode the maximum number of blocks
+        while len(inpt_rem) > 0 and dec_blocks <= max_blocks:
+            full, num_filled = xdl_micro_4fsk_decoder._fill_buf(block_buf, block_buf_i, inpt_rem)
+            block_buf_i = (block_buf_i + num_filled) % len(block_buf)
+            inpt_rem = inpt_rem[num_filled:]
+            # if we've filled the buffer (and are not doing it for the last time after having
+            # maxed out our block count), then decode the data
+            if full:
+                # if we successfully got a complete block, decode it
+                block_out = xdl_micro_4fsk_decoder.decode_block_raw(block_buf, high, low)
+                out = np.append(out, block_out)
+                dec_blocks += 1
 
-                np.append(out, xdl_micro_4fsk_decoder.decode_block_raw(block_buf, high, low))
-                block_buf_i = 0
+        return out, dec_blocks, block_buf_i
 
-        return out, dec_blocks , block_buf_i
+    @staticmethod
+    def _fill_buf(buf, buf_i, inpt):
+        """ Fills as much of the given numpy buffer from inpt, starting at buf_i in the buffer.
+        Returns whether the buffer was filled and how many elements from input were used
+        """
+        buf_remaining = len(buf) - buf_i
+        inpt_remaining = len(inpt)
+        if inpt_remaining < buf_remaining:
+            # if we don't have enough to fill up the buffer, fill up what we can
+            buf[buf_i:(buf_i + inpt_remaining)] = inpt
+            return False, inpt_remaining
+        else:
+            # otherwise, if we can at least fill up the current block, do so
+            buf[buf_i:] = inpt[0:buf_remaining]
+            return True, buf_remaining
 
     @staticmethod
     def decode_block_raw(block_buf, high, low):
@@ -286,19 +270,18 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
 
     @staticmethod
     def get_symbols(inpt, high, low):
-        """ Converts raw input values into numerical base-4 symbols, based
-        on the given high value corresponding to +2 deviation and low to -2
+        """ Converts raw input values in a numpy array into numerical base-4 symbols,
+        based on the given high value corresponding to +2 deviation and low to -2
         """
-        # shift symbols from range [high, low] to range [2, -2]
+        # shift symbols from range [high, low] to range [1, -1]
         # and then threshold
-        syms = np.zeros(len(inpt), dtype=np.uint8)
-        syms = 4 * (syms - low) / high - 2
+        syms = 2 * (inpt - low) / float(high - low) - 1
         for i in range(len(syms)):
-            if syms[i] >= 1.5:
+            if syms[i] >= 0.75:
                 syms[i] = 1
-            elif syms[i] >= 0:
+            elif syms[i] >= 0.0:
                 syms[i] = 0
-            elif syms[i] > -1.5:
+            elif syms[i] > -0.75:
                 syms[i] = 2
             else:
                 syms[i] = 3
@@ -345,3 +328,9 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
             byts[2*i+1] = byte2
 
         return byts
+
+    @staticmethod
+    def _bytearr_to_string(byts):
+        """ Converts a numpy array of integer byte-values to a string """
+        chrs = [chr(int(c)) for c in byts]
+        return "".join(chrs)
