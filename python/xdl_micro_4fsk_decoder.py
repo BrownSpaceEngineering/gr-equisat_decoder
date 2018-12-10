@@ -52,7 +52,7 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
         gr.basic_block.__init__(self,
             name="xdl_micro_4fsk_decoder",
             in_sig=[np.float32],
-            out_sig=[np.uint32]) # only need one byte but GNU radio needs same input/output size
+            out_sig=[np.byte]) # only need one byte but GNU radio needs same input/output size
 
         # set enough history to be large enough to store a ful premable
         self.NUM_OLD_DATA = self.MAX_PREAMBLE_LEN
@@ -72,6 +72,9 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
         self.block_buf_i = 0 # current index in buf
         self.num_decoded_blocks = 0 # number of blocks decoded
 
+        # TODO
+        self.num_packets = 0
+
 
     def forecast(self, noutput_items, ninput_items_required):
         """ Called by GNU radio to determine how many input items must be
@@ -86,6 +89,9 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
         # NOTE: input_items always includes self.NUM_OLD_DATA "old" bytes
         # we've already read, and the rest are new (see set_history above)
         inpt = input_items[0]
+
+        if self.num_packets > 6:
+            return 0
 
         # finite state machine, with the ability to possibly transition through
         # all states in one iteration (if we get a full packet in inpt)
@@ -145,6 +151,7 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
                 self.state = self.ST_SEARCHING
 
             output_items[0] = out
+            self.num_packets += 1
             print(xdl_micro_4fsk_decoder._bytearr_to_string(out))
             return len(out)
 
@@ -162,12 +169,12 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
         Returns whether one was found, its start and end index
         cycle, and the low and high value.
         """
+        found_first = False
+        start = -1
+        end = -1
         high_sum = 0
         low_sum = 0
         cycle_count = 0
-        start = 0
-        end = 0
-        found_first = False
         i = 0
         while i < len(inpt)-4:
             if xdl_micro_4fsk_decoder._is_preamble_cycle(inpt, i, sym_sim_thresh):
@@ -187,13 +194,27 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
 
             elif found_first:
                 # if we didn't find a cycle but we'd already found one,
-                # we've reached the end of the possible preamble
-                break
+                # we've reached the end of _that_ possible preamble,
+                # so check if it's a suitable preamble
+                if 4 * cycle_count < min_preamble_len:  # num symbols
+                    # no valid preamble if insufficient cycles found,
+                    # so reset and keep looking
+                    found_first = False
+                    start = -1
+                    end = -1
+                    high_sum = 0
+                    low_sum = 0
+                    cycle_count = 0
+
+                else:
+                    # otherwise, return this preamble
+                    break
+
             else:
                 # if we found nothing, continue stepping one at a time
                 i += 1
 
-        if 4*cycle_count < min_preamble_len: # num symbols
+        if 4 * cycle_count < min_preamble_len:  # num symbols
             # no valid preamble if insufficient cycles found
             return False, -1, -1, 0, 0
         else:

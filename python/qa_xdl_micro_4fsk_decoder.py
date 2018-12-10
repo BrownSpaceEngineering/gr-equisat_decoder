@@ -38,11 +38,11 @@ class qa_xdl_micro_4fsk_decoder (gr_unittest.TestCase):
         self.tb = None
 
     def test_is_preamble_cycle(self):
-        self.assertFalse(xdl_micro_4fsk_decoder.is_preamble_cycle([0, 0, 0, 0], 0, 0.1))
-        self.assertTrue(xdl_micro_4fsk_decoder.is_preamble_cycle([-1, -1, 1, 1], 0, 0.1))
-        self.assertTrue(xdl_micro_4fsk_decoder.is_preamble_cycle([-1000, -900, 100, 101], 0, 0.1))
-        self.assertFalse(xdl_micro_4fsk_decoder.is_preamble_cycle([-1000, -900, 900, 1000], 0, 0.01))
-        self.assertFalse(xdl_micro_4fsk_decoder.is_preamble_cycle([-1000, -900, 900, 1000], 0, 0.1))
+        self.assertFalse(xdl_micro_4fsk_decoder._is_preamble_cycle([0, 0, 0, 0], 0, 0.1))
+        self.assertTrue(xdl_micro_4fsk_decoder._is_preamble_cycle([-1, -1, 1, 1], 0, 0.1))
+        self.assertTrue(xdl_micro_4fsk_decoder._is_preamble_cycle([-1000, -900, 100, 101], 0, 0.1))
+        self.assertFalse(xdl_micro_4fsk_decoder._is_preamble_cycle([-1000, -900, 900, 1000], 0, 0.01))
+        self.assertFalse(xdl_micro_4fsk_decoder._is_preamble_cycle([-1000, -900, 900, 1000], 0, 0.1))
 
     def test_check_for_preamble(self):
         found, start, end, high, low = xdl_micro_4fsk_decoder.check_for_preamble(
@@ -53,8 +53,8 @@ class qa_xdl_micro_4fsk_decoder (gr_unittest.TestCase):
         self.assertEqual(high, 1)
         self.assertEqual(low, -1)
 
-
-        found, start, end, high, low = xdl_micro_4fsk_decoder.check_for_preamble(packet_raw_EQUiSatx50,
+        inpt = np.array(packet_raw_EQUiSatx50)
+        found, start, end, high, low = xdl_micro_4fsk_decoder.check_for_preamble(inpt,
                                                                                  xdl_micro_4fsk_decoder.MIN_PREAMBLE_LEN,
                                                                                  xdl_micro_4fsk_decoder.SYM_SIMILARITY_THRESH)
         self.assertTrue(found)
@@ -62,7 +62,8 @@ class qa_xdl_micro_4fsk_decoder (gr_unittest.TestCase):
         self.assertEqual(end, 194)
         self.assertAlmostEqual(high, 9200, delta=100)
         self.assertAlmostEqual(low, -9500, delta=100)
-        print(high, low)
+
+        # TODO: test multiple preambles, with bad ones initially
 
     def test_get_symbols(self):
         # note: +2 = 1, +1 = 0, -1 = 2, -2 = 3
@@ -105,7 +106,7 @@ class qa_xdl_micro_4fsk_decoder (gr_unittest.TestCase):
         # run full packet through
         src = blocks.vector_source_f(packet_raw_EQUiSatx50, repeat=False)
         decoder = xdl_micro_4fsk_decoder()
-        dst = blocks.vector_sink_f()
+        dst = blocks.vector_sink_b()
         self.tb.connect(src, decoder)
         self.tb.connect(decoder, dst)
         self.tb.run()
