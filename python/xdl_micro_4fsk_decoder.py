@@ -21,6 +21,7 @@
 
 import numpy as np
 from gnuradio import gr
+import binascii
 
 class xdl_micro_4fsk_decoder(gr.basic_block):
     """
@@ -38,7 +39,7 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
     ST_IN_BLOCKS = 2 # waiting to fill block buffer from incoming
 
     # packet layout constants
-    HEADER_LEN = 22 # symbols
+    HEADER_LEN = 24 # symbols
     BLOCK_LEN = 80 # symbols
     # largest possible/smallest acceptable preamble length (for starting to parse packet)
     MAX_PREAMBLE_LEN = 185 # symbols
@@ -54,7 +55,7 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
             in_sig=[np.float32],
             out_sig=[np.byte]) # only need one byte but GNU radio needs same input/output size
 
-        # set enough history to be large enough to store a ful premable
+        # set enough history to be large enough to store a full premable
         self.NUM_OLD_DATA = self.MAX_PREAMBLE_LEN
         self.set_history(self.NUM_OLD_DATA)
 
@@ -72,10 +73,6 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
         self.block_buf_i = 0 # current index in buf
         self.num_decoded_blocks = 0 # number of blocks decoded
 
-        # TODO
-        self.num_packets = 0
-
-
     def forecast(self, noutput_items, ninput_items_required):
         """ Called by GNU radio to determine how many input items must be
         delivered to produce a given number of output items.
@@ -87,11 +84,9 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
     def general_work(self, input_items, output_items):
         """ Called by GNU Radio with input stream """
         # NOTE: input_items always includes self.NUM_OLD_DATA "old" bytes
-        # we've already read, and the rest are new (see set_history above)
+        # we've already read, plus possibly more if we didn't consume them,
+        # but the rest are new (see set_history above)
         inpt = input_items[0]
-
-        if self.num_packets > 6:
-            return 0
 
         # finite state machine, with the ability to possibly transition through
         # all states in one iteration (if we get a full packet in inpt)
@@ -116,6 +111,8 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
                 start_i = end
                 # continue down into ST_IN_HEADER case (it'll check if there's data on the header)
             else:
+                # consume the failed input (note that because we have history we will get a full preamble if we're in one)
+                self.consume(0, len(inpt))
                 return 0
 
         if self.state == self.ST_IN_HEADER:
@@ -126,10 +123,12 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
             if len(rem) >= header_remaining:
                 # move onto blocks, starting past end of header
                 self.state = self.ST_IN_BLOCKS
-                start_i += header_remaining
+                start_i += header_remaining-1 # entire header was just read
             else:
                 # state is still ST_IN_HEADER, just note we read some more
                 self.header_syms_read += len(rem)
+                # consume what parts of the header we've read
+                self.consume(0, len(inpt))
                 return 0
 
         if self.state == self.ST_IN_BLOCKS:
@@ -139,11 +138,13 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
 
             # process all new/remaining data as blocks (we may have read both header and preamble out of this)
             rem = inpt[start_i:]
-            out, dec_blocks, self.block_buf_i = self.process_blocks(rem,
+            out, dec_blocks, self.block_buf_i, inpt_consumed = self.process_blocks(rem,
                 self.block_buf, self.block_buf_i, max_blocks, self.high, self.low)
 
             # in the special case of the first block, ignore the first 5 bytes (these are apparently overhead)
             if self.num_decoded_blocks == 0 and len(out) > 5:
+                print("front bytes:")
+                print(out[:5])
                 out = out[5:]
 
             self.num_decoded_blocks += dec_blocks
@@ -151,8 +152,10 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
                 self.state = self.ST_SEARCHING
 
             output_items[0] = out
-            self.num_packets += 1
-            print(xdl_micro_4fsk_decoder._bytearr_to_string(out))
+            out_str = xdl_micro_4fsk_decoder._bytearr_to_string(out)
+            print("data: %s" % out_str)
+            print("hex: %s" % binascii.hexlify(out_str))
+            self.consume(0, start_i + inpt_consumed)
             return len(out)
 
         else: # revert
@@ -190,7 +193,7 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
                 found_first = True
                 # in case we're the end, use this cycle as the end
                 # was incremented past last cycle, plus one to be start of next byte sequence (i.e. header)
-                end = i+1
+                end = i
 
             elif found_first:
                 # if we didn't find a cycle but we'd already found one,
@@ -243,7 +246,8 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
         (starting at the given index in the block buffer),
         decoding multiple blocks (up to max_blocks) and producing output if necessary.
         Also checks based on symbols whether to terminate
-        Returns any such data, the count of blocks decoded, and the new block_buf_i
+        Returns any such data, the count of blocks decoded, the new block_buf_i,
+        and the amount of block_inpt that was consumed
         """
         out = np.empty(0) # decoded bytes per one block
         dec_blocks = 0
@@ -263,7 +267,7 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
                 out = np.append(out, block_out)
                 dec_blocks += 1
 
-        return out, dec_blocks, block_buf_i
+        return out, dec_blocks, block_buf_i, len(block_inpt) - len(inpt_rem)
 
     @staticmethod
     def _fill_buf(buf, buf_i, inpt):
