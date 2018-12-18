@@ -4,7 +4,7 @@
   <key>equisat_decoder_xdl_micro_4fsk_preamble_detect</key>
   <category>[equisat_decoder]</category>
   <import>import equisat_decoder</import>
-  <make>equisat_decoder.xdl_micro_4fsk_preamble_detect($num_blocks,$max_symbol_ratio)</make>
+  <make>equisat_decoder.xdl_micro_4fsk_preamble_detect($num_blocks,$max_symbol_ratio, $min_preamble_len)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -22,6 +22,13 @@
     <key>max_symbol_ratio</key>
     <value>0.33</value>
     <type>float</type>
+  </param>
+
+  <param>
+    <name>Min preamble length</name>
+    <key>min_preamble_len</key>
+    <value>96</value>
+    <type>int</type>
   </param>
 
   <!-- Make one 'sink' node per input. Sub-nodes:

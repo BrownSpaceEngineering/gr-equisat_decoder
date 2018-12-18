@@ -46,7 +46,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>equisat_decoder</value>
+      <value>equisat_decoder_test</value>
     </param>
     <param>
       <key>max_nouts</key>
@@ -116,7 +116,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -331,7 +331,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>file</key>
@@ -649,7 +649,7 @@
     </param>
     <param>
       <key>max_num_blocks</key>
-      <value>15</value>
+      <value>20</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -704,7 +704,7 @@
     </param>
     <param>
       <key>num_blocks</key>
-      <value>15</value>
+      <value>20</value>
     </param>
   </block>
   <block>
@@ -2066,7 +2066,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
