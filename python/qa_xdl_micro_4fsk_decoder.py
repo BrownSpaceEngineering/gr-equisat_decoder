@@ -50,7 +50,7 @@ class qa_xdl_micro_4fsk_decoder (gr_unittest.TestCase):
             [0, 0.1, -0.1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 0, -1], 12, 0.1)
         self.assertTrue(found)
         self.assertEqual(start, 3)
-        self.assertEqual(end, 16)
+        self.assertEqual(end, 15)
         self.assertEqual(high, 1)
         self.assertEqual(low, -1)
 
@@ -106,7 +106,6 @@ class qa_xdl_micro_4fsk_decoder (gr_unittest.TestCase):
         # data = self.read_wave("../../../cont_sweep_0_val.wav") # 0to4_sweep_2_val
         data = packet_raw_EQUiSatx50
 
-        print("complete input length: %d" % (len(data)))
         # run full packet through
         src = blocks.vector_source_f(data, repeat=False)
         decoder = xdl_micro_4fsk_decoder()
@@ -115,7 +114,6 @@ class qa_xdl_micro_4fsk_decoder (gr_unittest.TestCase):
         self.tb.connect(decoder, dst)
         self.tb.run()
         result_data = dst.data()
-        print(result_data)
         self.assertFloatTuplesAlmostEqual(packet_output_EQUiSatx50, result_data)
 
     def read_wave(self, fname):

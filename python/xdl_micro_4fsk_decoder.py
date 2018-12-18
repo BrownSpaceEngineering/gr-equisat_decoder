@@ -35,11 +35,11 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
     """
     # packet progress states
     ST_SEARCHING = 0 # searching for preamble or in incomplete preamble
-    ST_IN_HEADER = 1 # past preamble but haven't gotten through header
+    ST_IN_FRAME_SYNC = 1 # iterating over useless frame sync symbols
     ST_IN_BLOCKS = 2 # waiting to fill block buffer from incoming
 
     # packet layout constants
-    HEADER_LEN = 24 # symbols
+    FRAME_SYNC_LEN = 24 # symbols
     BLOCK_LEN = 80 # symbols
     # largest possible/smallest acceptable preamble length (for starting to parse packet)
     MAX_PREAMBLE_LEN = 185 # symbols
@@ -61,8 +61,8 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
 
         # the current state in the sequence of reading a packet
         self.state = self.ST_SEARCHING
-        # when in ST_IN_HEADER, this gives the # of SYMBOLS of header read so far
-        self.header_syms_read = 0
+        # when in ST_IN_FRAME_SYNC, this gives the # of SYMBOLS of frame sync section read so far
+        self.frame_sync_syms_read = 0
 
         # the current input values of the +2 and -2 symbols
         self.high = 0
@@ -77,9 +77,7 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
         """ Called by GNU radio to determine how many input items must be
         delivered to produce a given number of output items.
         """
-        # TODO: just a rough estimate; it takes 80 symbols for 18 bytes
-        ninput_items_required[0] = (1887*noutput_items)/356 #self.MAX_PREAMBLE_LEN + self.HEADER_LEN + (80*noutput_items)/(18*noutput_items)
-        # TODO: use set_output_multiple??
+        ninput_items_required[0] = self.MAX_PREAMBLE_LEN + self.FRAME_SYNC_LEN + (80*noutput_items)/(18*noutput_items)
 
     def general_work(self, input_items, output_items):
         """ Called by GNU Radio with input stream """
@@ -87,13 +85,12 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
         # we've already read, plus possibly more if we didn't consume them,
         # but the rest are new (see set_history above)
         inpt = input_items[0]
+        new_inpt = inpt[self.NUM_OLD_DATA:] # shortcut to new data; image of array
 
-        # finite state machine, with the ability to possibly transition through
-        # all states in one iteration (if we get a full packet in inpt)
-        start_i = self.NUM_OLD_DATA-1 # where current state should start in input
+        # finite state machine for different sections of packet
         if self.state is self.ST_SEARCHING:
             # reset state variables when we start searching
-            self.header_syms_read = 0
+            self.frame_sync_syms_read = 0
             self.num_decoded_blocks = 0
             self.block_buf_i = 0
 
@@ -104,58 +101,55 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
                 # if preamble is found, setup packet state
                 self.high = high
                 self.low = low
-
-                # now, try and start reading the header (reset start_i to wherever the preamble ended)
-                # note this should never be smaller than self.NEW_DATA_INDEX, so start_i will be increasing
-                self.state = self.ST_IN_HEADER
-                start_i = end
-                # continue down into ST_IN_HEADER case (it'll check if there's data on the header)
+                # consume only the NEW part of the preamble
+                self.consume(0, end-1-self.NUM_OLD_DATA)
+                # now, try and start reading the frame sync
+                self.state = self.ST_IN_FRAME_SYNC
             else:
-                # consume the failed input (note that because we have history we will get a full preamble if we're in one)
+                # consume the non-preamble input (including the history, because
+                # we can still used that to get a full preamble if we're only part way through)
                 self.consume(0, len(inpt))
-                return 0
 
-        if self.state == self.ST_IN_HEADER:
-            # reset our buffer to be just that after preamble (if the preamble was in this input)
-            rem = inpt[start_i:]
-            # check if the new data is enough to complete the header
-            header_remaining = self.HEADER_LEN - self.header_syms_read
-            if len(rem) >= header_remaining:
-                # move onto blocks, starting past end of header
+            return 0
+
+        elif self.state == self.ST_IN_FRAME_SYNC:
+            # check if the new data is enough to complete the frame sync
+            frame_sync_remaining = self.FRAME_SYNC_LEN - self.frame_sync_syms_read
+            if len(new_inpt) >= frame_sync_remaining:
+                # move onto blocks, starting past end of frame sync
                 self.state = self.ST_IN_BLOCKS
-                start_i += header_remaining-1 # entire header was just read
+                # consume the (rest of) the frame sync
+                self.consume(0, frame_sync_remaining)
             else:
-                # state is still ST_IN_HEADER, just note we read some more
-                self.header_syms_read += len(rem)
-                # consume what parts of the header we've read
-                self.consume(0, len(inpt))
-                return 0
+                # state is still ST_IN_FRAME_SYNC, just note we read some more
+                self.frame_sync_syms_read += len(new_inpt)
+                # consume the frame sync that we've read
+                self.consume(0, len(new_inpt))
 
-        if self.state == self.ST_IN_BLOCKS:
+            return 0
+
+        elif self.state == self.ST_IN_BLOCKS:
             # just reset if we've exceeded a number of blocks
-            # TODO: later we'll figure out how to read the length from the header
+            # TODO: later we'll figure out how to read the length from the header block
             max_blocks = 350/18 # 350 bytes = 19.4 = 20 blocks
 
-            # process all new/remaining data as blocks (we may have read both header and preamble out of this)
-            rem = inpt[start_i:]
-            out, dec_blocks, self.block_buf_i, inpt_consumed = self.process_blocks(rem,
+            out, dec_blocks, self.block_buf_i, inpt_consumed = self.process_blocks(new_inpt,
                 self.block_buf, self.block_buf_i, max_blocks, self.high, self.low)
 
             # in the special case of the first block, ignore the first 5 bytes (these are apparently overhead)
             if self.num_decoded_blocks == 0 and len(out) > 5:
-                print("front bytes:")
-                print(out[:5])
                 out = out[5:]
 
             self.num_decoded_blocks += dec_blocks
             if self.num_decoded_blocks > max_blocks:
                 self.state = self.ST_SEARCHING
 
-            output_items[0] = out
+            output_items[0][:len(out)] = out
             out_str = xdl_micro_4fsk_decoder._bytearr_to_string(out)
             print("data: %s" % out_str)
             print("hex: %s" % binascii.hexlify(out_str))
-            self.consume(0, start_i + inpt_consumed)
+            self.consume(0, inpt_consumed)
+
             return len(out)
 
         else: # revert
@@ -192,7 +186,7 @@ class xdl_micro_4fsk_decoder(gr.basic_block):
                 i += 4
                 found_first = True
                 # in case we're the end, use this cycle as the end
-                # was incremented past last cycle, plus one to be start of next byte sequence (i.e. header)
+                # was incremented past last cycle, plus one to be start of next byte sequence (i.e. the frame sync)
                 end = i
 
             elif found_first:
