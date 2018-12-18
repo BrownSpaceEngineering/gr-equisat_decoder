@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <block>
-  <name>xdl_micro_4fsk_block_decode</name>
-  <key>equisat_decoder_xdl_micro_4fsk_block_decode</key>
+  <name>equisat_4fsk_block_decode</name>
+  <key>equisat_decoder_equisat_4fsk_block_decode</key>
   <category>[equisat_decoder]</category>
   <import>import equisat_decoder</import>
-  <make>equisat_decoder.xdl_micro_4fsk_block_decode($max_num_blocks)</make>
+  <make>equisat_decoder.equisat_4fsk_block_decode($max_num_blocks)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name

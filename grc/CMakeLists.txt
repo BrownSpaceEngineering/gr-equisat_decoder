@@ -17,6 +17,6 @@
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
 install(FILES
-    equisat_decoder_xdl_micro_4fsk_preamble_detect.xml
-    equisat_decoder_xdl_micro_4fsk_block_decode.xml DESTINATION share/gnuradio/grc/blocks
+    equisat_decoder_equisat_4fsk_preamble_detect.xml
+    equisat_decoder_equisat_4fsk_block_decode.xml DESTINATION share/gnuradio/grc/blocks
 )

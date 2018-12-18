@@ -32,8 +32,8 @@ except ImportError:
 
 # import any pure python here
 
-from xdl_micro_4fsk_preamble_detect import xdl_micro_4fsk_preamble_detect
-from xdl_micro_4fsk_block_decode import xdl_micro_4fsk_block_decode
+from equisat_4fsk_preamble_detect import equisat_4fsk_preamble_detect
+from equisat_4fsk_block_decode import equisat_4fsk_block_decode
 
 
 #

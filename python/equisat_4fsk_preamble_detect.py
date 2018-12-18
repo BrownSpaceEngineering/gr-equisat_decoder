@@ -24,17 +24,16 @@ from gnuradio import gr
 import pmt
 import array
 
-from xdl_micro_4fsk_block_decode import xdl_micro_4fsk_block_decode
+from equisat_4fsk_block_decode import equisat_4fsk_block_decode
 
-class xdl_micro_4fsk_preamble_detect(gr.basic_block):
+class equisat_4fsk_preamble_detect(gr.basic_block):
     """
     Preamble and frame sync detector and packager for
-    the XDL Micro Radio operating in its 9600-baud
-    4FSK Transparent Mode (with FEC and scrambler disabled).
+    Brown Space Engineering's EQUiSat radio using a
+    transparent 4FSK protocol.
 
-    Input must be the 4800 Hz 4FSK symbols (corresponding
-    to four 4FSK frequencies, with no requirements on their
-    absolute values)
+    Input must be FM or quadrature-demodulated float input, with no
+    requirement on the amplitude.
 
     Note that blocks will only be transmitted when the number of
     symbols equivalent to num_blocks are acquired.
@@ -50,7 +49,7 @@ class xdl_micro_4fsk_preamble_detect(gr.basic_block):
     ST_IN_BLOCKS = 2  # waiting to fill block buffer from incoming
 
     # packet layout constants
-    SYMS_PER_BLOCK = xdl_micro_4fsk_block_decode.SYMS_PER_BLOCK
+    SYMS_PER_BLOCK = equisat_4fsk_block_decode.SYMS_PER_BLOCK
     FRAME_SYNC_LEN = 24  # symbols
 
     # largest possible/smallest acceptable preamble length (for starting to parse packet)
@@ -73,7 +72,7 @@ class xdl_micro_4fsk_preamble_detect(gr.basic_block):
 
     def __init__(self, num_blocks=DEF_MAX_NUM_BLOCKS, max_symbol_ratio=DEF_MAX_SYMBOL_RATIO, min_preamble_len=DEF_MIN_PREAMBLE_LEN):
         gr.basic_block.__init__(self,
-            name="xdl_micro_4fsk_preamble_detect",
+            name="equisat_4fsk_preamble_detect",
             in_sig=[np.float32],
             out_sig=None)
 
@@ -190,7 +189,7 @@ class xdl_micro_4fsk_preamble_detect(gr.basic_block):
         cycle_count = 0
         i = 0
         while i < len(inpt) - 4:
-            if xdl_micro_4fsk_preamble_detect._is_preamble_cycle(inpt, i, sym_sim_thresh):
+            if equisat_4fsk_preamble_detect._is_preamble_cycle(inpt, i, sym_sim_thresh):
                 # (note start if first found)
                 if not found_first:
                     start = i

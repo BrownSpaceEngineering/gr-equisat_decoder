@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <block>
-  <name>xdl_micro_4fsk_preamble_detect</name>
-  <key>equisat_decoder_xdl_micro_4fsk_preamble_detect</key>
+  <name>equisat_4fsk_preamble_detect</name>
+  <key>equisat_decoder_equisat_4fsk_preamble_detect</key>
   <category>[equisat_decoder]</category>
   <import>import equisat_decoder</import>
-  <make>equisat_decoder.xdl_micro_4fsk_preamble_detect($num_blocks,$max_symbol_ratio, $min_preamble_len)</make>
+  <make>equisat_decoder.equisat_4fsk_preamble_detect($num_blocks,$max_symbol_ratio, $min_preamble_len)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name

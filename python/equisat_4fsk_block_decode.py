@@ -24,9 +24,10 @@ from gnuradio import gr
 import pmt
 import array
 
-class xdl_micro_4fsk_block_decode(gr.basic_block):
+class equisat_4fsk_block_decode(gr.basic_block):
     """
-    Block de-interlacer and decoder
+    Block de-interlacer and decoder for Brown Space Engineering's
+    EQUiSat radio using a transparent 4FSK protocol.
     """
 
     # input block length in symbols
@@ -36,7 +37,7 @@ class xdl_micro_4fsk_block_decode(gr.basic_block):
 
     def __init__(self, max_num_blocks):
         gr.basic_block.__init__(self,
-            name="xdl_micro_4fsk_block_decode",
+            name="equisat_4fsk_block_decode",
             in_sig=[],
             out_sig=[])
 
