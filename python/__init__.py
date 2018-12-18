@@ -31,6 +31,9 @@ except ImportError:
 	pass
 
 # import any pure python here
-from xdl_micro_4fsk_decoder import xdl_micro_4fsk_decoder
+
+from xdl_micro_4fsk_preamble_detect import xdl_micro_4fsk_preamble_detect
+from xdl_micro_4fsk_block_decode import xdl_micro_4fsk_block_decode
+
 
 #
