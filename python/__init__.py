@@ -34,6 +34,9 @@ except ImportError:
 
 from equisat_4fsk_preamble_detect import equisat_4fsk_preamble_detect
 from equisat_4fsk_block_decode import equisat_4fsk_block_decode
+from equisat_telemetry_parser import equisat_telemetry_parser
+from equisat_submitter import equisat_submitter
+
 
 
 #

@@ -28,20 +28,26 @@ class equisat_4fsk_block_decode(gr.basic_block):
     """
     Block de-interlacer and decoder for Brown Space Engineering's
     EQUiSat radio using a transparent 4FSK protocol.
+
+    Requires msg_size argument, the size of the original transmitted message in bytes
     """
 
     # input block length in symbols
     SYMS_PER_BLOCK = 80
     # bytes per block (after decoding)
     BYTES_PER_BLOCK = 18
+    # number of excess metadata bytes in the first block
+    NUM_HEADER_BYTES = 5
 
-    def __init__(self, max_num_blocks):
+    def __init__(self, msg_size):
         gr.basic_block.__init__(self,
             name="equisat_4fsk_block_decode",
             in_sig=[],
             out_sig=[])
 
-        self.max_num_blocks = max_num_blocks
+        self.msg_size = msg_size
+        # need enough blocks to contain a complete message (including header bytes on front)
+        self.total_num_blocks = int(round(self.NUM_HEADER_BYTES + 1.0*msg_size / self.BYTES_PER_BLOCK))
 
         self.message_port_register_in(pmt.intern('in'))
         self.set_msg_handler(pmt.intern('in'), self.handle_msg)
@@ -56,12 +62,15 @@ class equisat_4fsk_block_decode(gr.basic_block):
             return
 
         syms = np.array(pmt.u8vector_elements(msg), dtype='uint8')
-        if len(syms) < self.BYTES_PER_BLOCK:
-            # can't decode a partial block
-            return
 
         decodable_blocks = len(syms)/self.SYMS_PER_BLOCK
-        num_blocks = min(decodable_blocks, self.max_num_blocks)
+        if decodable_blocks < self.total_num_blocks:
+            # can't decode a partial block or a set of too few blocks
+            print("[WARNING] Insufficient number of blocks provided; %d given but need %d for %d bytes" %
+                  (decodable_blocks, self.total_num_blocks, self.msg_size))
+            return
+
+        num_blocks = min(decodable_blocks, self.total_num_blocks)
         byts = np.zeros(self.BYTES_PER_BLOCK*num_blocks, dtype=np.uint8)
 
         for block in range(num_blocks):
@@ -69,8 +78,9 @@ class equisat_4fsk_block_decode(gr.basic_block):
             syms_i = block*self.SYMS_PER_BLOCK
             byts[byts_i:byts_i+self.BYTES_PER_BLOCK] = self.decode_block(syms[syms_i:syms_i+self.SYMS_PER_BLOCK])
 
-        # ignore first 5 bytes of first block as these contain packet metadata
-        byts_arr = array.array('B', byts[5:])
+        # ignore first few bytes of first block as these contain packet metadata
+        # cut off the rest to the requested length
+        byts_arr = array.array('B', byts[self.NUM_HEADER_BYTES:self.NUM_HEADER_BYTES+self.msg_size])
         print(self._bytearr_to_string(byts_arr))
         self.message_port_pub(pmt.intern('out'), pmt.cons(pmt.get_PMT_NIL(), pmt.init_u8vector(len(byts_arr), byts_arr)))
         self.num_packets += 1
