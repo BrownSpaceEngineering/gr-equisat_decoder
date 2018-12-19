@@ -72,7 +72,7 @@ class equisat_4fsk_block_decode(gr.basic_block):
         # ignore first 5 bytes of first block as these contain packet metadata
         byts_arr = array.array('B', byts[5:])
         print(self._bytearr_to_string(byts_arr))
-        self.message_port_pub(pmt.intern('out'), pmt.cons(pmt.car(msg_pmt), pmt.init_u8vector(len(byts_arr), byts_arr)))
+        self.message_port_pub(pmt.intern('out'), pmt.cons(pmt.get_PMT_NIL(), pmt.init_u8vector(len(byts_arr), byts_arr)))
         self.num_packets += 1
 
     @staticmethod

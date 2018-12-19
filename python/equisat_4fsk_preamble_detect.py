@@ -164,7 +164,7 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
                 # send message with symbols and reset state
                 syms_arr = array.array('B', syms)
                 self.message_port_pub(pmt.intern('out'),
-                                      pmt.cons(pmt.make_dict(), pmt.init_u8vector(len(syms_arr), syms_arr)))
+                                      pmt.cons(pmt.get_PMT_NIL(), pmt.init_u8vector(len(syms_arr), syms_arr)))
                 self.reset_state()
 
             return 0
