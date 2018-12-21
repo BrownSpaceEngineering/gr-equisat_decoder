@@ -539,7 +539,7 @@
     </param>
     <param>
       <key>byte_buf_size</key>
-      <value>1200</value>
+      <value>255</value>
     </param>
     <param>
       <key>comment</key>

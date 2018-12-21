@@ -22,6 +22,7 @@
 import numpy as np
 from gnuradio import gr
 import pmt
+import math
 import array
 
 class equisat_4fsk_block_decode(gr.basic_block):
@@ -130,7 +131,8 @@ class equisat_4fsk_block_decode(gr.basic_block):
     @staticmethod
     def get_required_num_blocks(num_bytes):
         """ Returns the quantity of blocks (including the header block) needed to hold num_bytes"""
-        return int(round(1.0 * (equisat_4fsk_block_decode.HEADER_BLOCK_BYTES + num_bytes) / equisat_4fsk_block_decode.BYTES_PER_BLOCK))
+        return int(math.ceil((equisat_4fsk_block_decode.HEADER_BLOCK_BYTES + num_bytes)
+                         / float(equisat_4fsk_block_decode.BYTES_PER_BLOCK)))
 
     @staticmethod
     def _bytearr_to_string(byts):

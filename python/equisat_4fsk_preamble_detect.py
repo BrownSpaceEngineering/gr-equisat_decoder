@@ -70,7 +70,7 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
     MAX_UNCONSUMED_SIZE = 2 * MAX_PREAMBLE_LEN
 
     # normalized threshold for cutoff between +/-3 and +/-1 symbols (where 1.0 is the +3 symbol)
-    SYM_SEPERATION_THRESH = 0.667 # this makes sense because +3=2400Hz and +1=800Hz (1/3)
+    SYM_SEPERATION_THRESH = 0.66667 # this makes sense because +3=2400Hz and +1=800Hz (1/3)
 
     def __init__(self, byte_buf_size=DEF_BUF_SIZE_BYTES, max_symbol_ratio=DEF_MAX_SYMBOL_RATIO, min_preamble_len=DEF_MIN_PREAMBLE_LEN):
         gr.basic_block.__init__(self,
