@@ -19,10 +19,9 @@
 # Boston, MA 02110-1301, USA.
 # 
 
-import numpy as np
 from gnuradio import gr
 import pmt
-from packetparse import packetparse
+import packetparse
 import yaml
 import binascii
 
@@ -38,7 +37,6 @@ class equisat_telemetry_parser(gr.basic_block):
 
         self.message_port_register_in(pmt.intern('in'))
         self.set_msg_handler(pmt.intern('in'), self.handle_msg)
-        self.message_port_register_out(pmt.intern('out'))
 
     def handle_msg(self, msg_pmt):
         msg = pmt.cdr(msg_pmt)
@@ -58,7 +56,7 @@ class equisat_telemetry_parser(gr.basic_block):
             return
 
         print("EQUiSat telemetry:")
-        print(yaml.dump(packet, default_flow_style=False))
+        print(yaml.dump(parsed, default_flow_style=False))
 
     @staticmethod
     def bytes_to_hex_str(byts):

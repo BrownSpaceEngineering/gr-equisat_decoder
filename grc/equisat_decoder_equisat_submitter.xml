@@ -4,7 +4,7 @@
   <key>equisat_decoder_equisat_submitter</key>
   <category>[equisat_decoder]</category>
   <import>import equisat_decoder</import>
-  <make>equisat_decoder.equisat_submitter($station_name, $api_key)</make>
+  <make>equisat_decoder.equisat_submitter($station_name, $api_key, $api_route)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -19,6 +19,13 @@
   <param>
     <name>API Key</name>
     <key>api_key</key>
+    <type>string</type>
+  </param>
+
+  <param>
+    <name>API Route</name>
+    <key>api_route</key>
+    <value>http://api.brownspace.org/equisat/receive/raw</value>
     <type>string</type>
   </param>
 
