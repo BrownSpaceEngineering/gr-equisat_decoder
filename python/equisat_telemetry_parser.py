@@ -46,14 +46,9 @@ class equisat_telemetry_parser(gr.basic_block):
 
         packet = self.bytes_to_hex_str(pmt.u8vector_elements(msg))
 
-        try:
-            parsed, err = packetparse.parse_packet(packet)
-            if err is not None:
-                print("[ERROR] packet parsing failed: %s" % err)
-                return
-        except ValueError or KeyError as e:
-            print("[ERROR] packet parsing errored: %s", e)
-            return
+        parsed, errs = packetparse.parse_packet(packet)
+        if len(errs) > 0:
+            print("[WARNING] packet parsing failed; errors: %s" % (", ".join(errs)))
 
         print("EQUiSat telemetry:")
         print(yaml.dump(parsed, default_flow_style=False))
