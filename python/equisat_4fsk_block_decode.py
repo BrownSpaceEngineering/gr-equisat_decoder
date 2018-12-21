@@ -37,7 +37,7 @@ class equisat_4fsk_block_decode(gr.basic_block):
     # bytes per block (after decoding)
     BYTES_PER_BLOCK = 18
     # number of excess metadata bytes in the first block
-    NUM_HEADER_BYTES = 5
+    HEADER_BLOCK_BYTES = 5
 
     def __init__(self, msg_size):
         gr.basic_block.__init__(self,
@@ -47,7 +47,7 @@ class equisat_4fsk_block_decode(gr.basic_block):
 
         self.msg_size = msg_size
         # need enough blocks to contain a complete message (including header bytes on front)
-        self.total_num_blocks = int(round(self.NUM_HEADER_BYTES + 1.0*msg_size / self.BYTES_PER_BLOCK))
+        self.total_num_blocks = self.get_required_num_blocks(msg_size)
 
         self.message_port_register_in(pmt.intern('in'))
         self.set_msg_handler(pmt.intern('in'), self.handle_msg)
@@ -80,7 +80,7 @@ class equisat_4fsk_block_decode(gr.basic_block):
 
         # ignore first few bytes of first block as these contain packet metadata
         # cut off the rest to the requested length
-        byts_arr = array.array('B', byts[self.NUM_HEADER_BYTES:self.NUM_HEADER_BYTES+self.msg_size])
+        byts_arr = array.array('B', byts[self.HEADER_BLOCK_BYTES:self.HEADER_BLOCK_BYTES + self.msg_size])
         print(self._bytearr_to_string(byts_arr))
         self.message_port_pub(pmt.intern('out'), pmt.cons(pmt.get_PMT_NIL(), pmt.init_u8vector(len(byts_arr), byts_arr)))
         self.num_packets += 1
@@ -126,6 +126,11 @@ class equisat_4fsk_block_decode(gr.basic_block):
             byts[2 * i + 1] = byte2
 
         return byts
+
+    @staticmethod
+    def get_required_num_blocks(num_bytes):
+        """ Returns the quantity of blocks (including the header block) needed to hold num_bytes"""
+        return int(round(1.0 * (equisat_4fsk_block_decode.HEADER_BLOCK_BYTES + num_bytes) / equisat_4fsk_block_decode.BYTES_PER_BLOCK))
 
     @staticmethod
     def _bytearr_to_string(byts):

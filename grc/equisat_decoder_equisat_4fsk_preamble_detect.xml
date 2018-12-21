@@ -4,16 +4,16 @@
   <key>equisat_decoder_equisat_4fsk_preamble_detect</key>
   <category>[equisat_decoder]</category>
   <import>import equisat_decoder</import>
-  <make>equisat_decoder.equisat_4fsk_preamble_detect($num_blocks,$max_symbol_ratio, $min_preamble_len)</make>
+  <make>equisat_decoder.equisat_4fsk_preamble_detect($byte_buf_size,$max_symbol_ratio, $min_preamble_len)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
        * key (makes the value accessible as $keyname, e.g. in the make node)
        * type -->
   <param>
-    <name>Num blocks</name>
-    <key>num_blocks</key>
-    <value>15</value>
+    <name>Byte buffer size</name>
+    <key>byte_buf_size</key>
+    <value>1200</value>
     <type>int</type>
   </param>
 

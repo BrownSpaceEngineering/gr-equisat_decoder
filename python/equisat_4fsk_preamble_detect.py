@@ -35,8 +35,9 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
     Input must be FM or quadrature-demodulated float input, with no
     requirement on the amplitude.
 
-    Note that blocks will only be transmitted when the number of
-    symbols equivalent to num_blocks are acquired.
+    Note that blocks will only be transmitted when the quantity of 18-byte
+    blocks sufficient to store byte_buf_size bytes is received
+    (i.e. 80 sample points * byte_buf_size).
 
     Allows configuration of max_symbol_ratio, the maximum ratio
     between two subsequent symbols for them to be considered
@@ -56,8 +57,9 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
     MAX_PREAMBLE_LEN = 185  # symbols
     DEF_MIN_PREAMBLE_LEN = 96  # symbols; must be mult of 4
 
-    # maximum number of blocks to read and package after a preamble
-    DEF_MAX_NUM_BLOCKS = 150
+    # the maximum number of bytes to read and package after a preamble,
+    # used to determine how many blocks to wait for (rounded up!)
+    DEF_BUF_SIZE_BYTES = 1200
 
     # packet/preamble detection constants
     # percentage of first symbol in pair that second must be within to be "the same"
@@ -68,9 +70,9 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
     MAX_UNCONSUMED_SIZE = 2 * MAX_PREAMBLE_LEN
 
     # normalized threshold for cutoff between +/-3 and +/-1 symbols (where 1.0 is the +3 symbol)
-    SYM_SEPERATION_THRESH = 0.667
+    SYM_SEPERATION_THRESH = 0.667 # this makes sense because +3=2400Hz and +1=800Hz (1/3)
 
-    def __init__(self, num_blocks=DEF_MAX_NUM_BLOCKS, max_symbol_ratio=DEF_MAX_SYMBOL_RATIO, min_preamble_len=DEF_MIN_PREAMBLE_LEN):
+    def __init__(self, byte_buf_size=DEF_BUF_SIZE_BYTES, max_symbol_ratio=DEF_MAX_SYMBOL_RATIO, min_preamble_len=DEF_MIN_PREAMBLE_LEN):
         gr.basic_block.__init__(self,
             name="equisat_4fsk_preamble_detect",
             in_sig=[np.float32],
@@ -78,7 +80,6 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
 
         self.message_port_register_out(pmt.intern('out'))
 
-        self.num_blocks = num_blocks
         self.max_symbol_ratio = max_symbol_ratio
         self.min_preamble_len = min_preamble_len
 
@@ -91,8 +92,9 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
         self.high = 0
         self.low = 0
 
-        # buffer to use to transmit message once we get max_num_blocks blocks
-        self.blocks_buf = np.zeros(self.SYMS_PER_BLOCK*num_blocks, dtype=np.float32)
+        # buffer to use to transmit message once we get required_blocks blocks
+        required_blocks = equisat_4fsk_block_decode.get_required_num_blocks(byte_buf_size)
+        self.blocks_buf = np.zeros(self.SYMS_PER_BLOCK*required_blocks, dtype=np.float32)
         self.blocks_buf_i = 0
 
         self.reset_state()

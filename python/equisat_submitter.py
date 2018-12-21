@@ -19,7 +19,6 @@
 # Boston, MA 02110-1301, USA.
 # 
 
-import numpy as np
 from gnuradio import gr
 import pmt
 import time
@@ -36,7 +35,7 @@ class equisat_submitter(gr.sync_block):
     """
 
     # route to telemetry input handler
-    BSE_API_ROUTE = "api.brownspace.org/equisat/receive_raw"
+    BSE_API_ROUTE = "api.brownspace.org/equisat/receive/raw"
 
     # minimum time between packet submits
     MIN_REQUEST_PERIOD = 1
