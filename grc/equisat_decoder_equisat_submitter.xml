@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <block>
-  <name>equisat_submitter</name>
+  <name>EQUiSat Submitter</name>
   <key>equisat_decoder_equisat_submitter</key>
   <category>[equisat_decoder]</category>
   <import>import equisat_decoder</import>
@@ -35,12 +35,7 @@
        * vlen
        * optional (set to 1 for optional inputs) -->
   <sink>
-    <name>raw</name>
-    <type>message</type>
-  </sink>
-
-  <sink>
-    <name>corrected</name>
+    <name>in</name>
     <type>message</type>
   </sink>
 

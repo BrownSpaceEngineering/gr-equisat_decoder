@@ -20,5 +20,6 @@ install(FILES
     equisat_decoder_equisat_4fsk_preamble_detect.xml
     equisat_decoder_equisat_4fsk_block_decode.xml
     equisat_decoder_equisat_telemetry_parser.xml
-    equisat_decoder_equisat_submitter.xml DESTINATION share/gnuradio/grc/blocks
+    equisat_decoder_equisat_submitter.xml
+    equisat_decoder_equisat_fec_decoder.xml DESTINATION share/gnuradio/grc/blocks
 )

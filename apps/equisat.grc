@@ -198,7 +198,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(660, 688)</value>
+      <value>(744, 724)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -309,6 +309,49 @@
     <param>
       <key>vlen</key>
       <value>1</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_pdu_remove</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(572, 728)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_pdu_remove_1</value>
+    </param>
+    <param>
+      <key>k</key>
+      <value>pmt.intern("raw")</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
     </param>
   </block>
   <block>
@@ -573,6 +616,10 @@
       <key>minoutbuf</key>
       <value>0</value>
     </param>
+    <param>
+      <key>print_packets</key>
+      <value>False</value>
+    </param>
   </block>
   <block>
     <key>equisat_decoder_equisat_4fsk_preamble_detect</key>
@@ -626,10 +673,53 @@
     </param>
   </block>
   <block>
+    <key>equisat_decoder_equisat_fec_decoder</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(148, 666)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>equisat_decoder_equisat_fec_decoder_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
     <key>equisat_decoder_equisat_submitter</key>
     <param>
       <key>api_key</key>
       <value>api_key</value>
+    </param>
+    <param>
+      <key>api_route</key>
+      <value>http://api.brownspace.org/equisat/receive/raw</value>
     </param>
     <param>
       <key>alias</key>
@@ -649,7 +739,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(660, 624)</value>
+      <value>(672, 634)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -680,11 +770,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(660, 582)</value>
+      <value>(388, 590)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1239,7 +1329,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>fmt</key>
@@ -1247,7 +1337,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(428, 696)</value>
+      <value>(344, 728)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1322,6 +1412,18 @@
     <sink_key>0</sink_key>
   </connection>
   <connection>
+    <source_block_id>blocks_pdu_remove_1</source_block_id>
+    <sink_block_id>blocks_message_debug_0</sink_block_id>
+    <source_key>pdus</source_key>
+    <sink_key>print</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_pdu_remove_1</source_block_id>
+    <sink_block_id>blocks_message_debug_0</sink_block_id>
+    <source_key>pdus</source_key>
+    <sink_key>print_pdu</sink_key>
+  </connection>
+  <connection>
     <source_block_id>blocks_short_to_float_0</source_block_id>
     <sink_block_id>blocks_multiply_const_vxx_0_0</sink_block_id>
     <source_key>0</source_key>
@@ -1353,31 +1455,31 @@
   </connection>
   <connection>
     <source_block_id>equisat_decoder_equisat_4fsk_block_decode_0</source_block_id>
-    <sink_block_id>equisat_decoder_equisat_submitter_0</sink_block_id>
-    <source_key>out</source_key>
-    <sink_key>corrected</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>equisat_decoder_equisat_4fsk_block_decode_0</source_block_id>
-    <sink_block_id>equisat_decoder_equisat_submitter_0</sink_block_id>
-    <source_key>out</source_key>
-    <sink_key>raw</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>equisat_decoder_equisat_4fsk_block_decode_0</source_block_id>
-    <sink_block_id>equisat_decoder_equisat_telemetry_parser_0</sink_block_id>
-    <source_key>out</source_key>
-    <sink_key>in</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>equisat_decoder_equisat_4fsk_block_decode_0</source_block_id>
-    <sink_block_id>satellites_print_timestamp_0</sink_block_id>
+    <sink_block_id>equisat_decoder_equisat_fec_decoder_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>in</sink_key>
   </connection>
   <connection>
     <source_block_id>equisat_decoder_equisat_4fsk_preamble_detect_0</source_block_id>
     <sink_block_id>equisat_decoder_equisat_4fsk_block_decode_0</sink_block_id>
+    <source_key>out</source_key>
+    <sink_key>in</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>equisat_decoder_equisat_fec_decoder_0</source_block_id>
+    <sink_block_id>equisat_decoder_equisat_submitter_0</sink_block_id>
+    <source_key>out</source_key>
+    <sink_key>in</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>equisat_decoder_equisat_fec_decoder_0</source_block_id>
+    <sink_block_id>equisat_decoder_equisat_telemetry_parser_0</sink_block_id>
+    <source_key>out</source_key>
+    <sink_key>in</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>equisat_decoder_equisat_fec_decoder_0</source_block_id>
+    <sink_block_id>satellites_print_timestamp_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>in</sink_key>
   </connection>
@@ -1389,8 +1491,8 @@
   </connection>
   <connection>
     <source_block_id>satellites_print_timestamp_0</source_block_id>
-    <sink_block_id>blocks_message_debug_0</sink_block_id>
+    <sink_block_id>blocks_pdu_remove_1</sink_block_id>
     <source_key>out</source_key>
-    <sink_key>print_pdu</sink_key>
+    <sink_key>pdus</sink_key>
   </connection>
 </flow_graph>

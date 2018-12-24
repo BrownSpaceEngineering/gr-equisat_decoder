@@ -31,9 +31,9 @@ class equisat_telemetry_parser(gr.basic_block):
     """
     def __init__(self):
         gr.basic_block.__init__(self,
-            name="equisat_telemetry_parser",
-            in_sig=[],
-            out_sig=[])
+                                name="equisat_telemetry_parser",
+                                in_sig=[],
+                                out_sig=[])
 
         self.message_port_register_in(pmt.intern('in'))
         self.set_msg_handler(pmt.intern('in'), self.handle_msg)
@@ -50,8 +50,32 @@ class equisat_telemetry_parser(gr.basic_block):
         if len(errs) > 0:
             print("[WARNING] packet parsing failed; errors: %s" % (", ".join(errs)))
 
-        print("EQUiSat telemetry:")
-        print(yaml.dump(parsed, default_flow_style=False))
+        # remove non-useful info
+        self.clean_parsed(parsed)
+
+        # print one string to keep them together in terminal (many threads printing)
+        out = "EQUiSat telemetry:\n" + yaml.dump(parsed, default_flow_style=False)
+        print(out)
+
+    @staticmethod
+    def clean_parsed(parsed):
+        if parsed is None:
+            return
+
+        if parsed.has_key("data"):
+            dat = parsed["data"]
+            if type(dat) == list:
+                for i in range[len(dat)]:
+                    if dat[i].has_key("data_hash"):
+                        del dat[i]["data_hash"]
+            elif type(dat) == dict and dat.has_key("data_hash"):
+                del dat["data_hash"]
+
+        if parsed.has_key("errors"):
+            errs = parsed["errors"]
+            for i in range(len(errs)):
+                if errs[i].has_key("data_hash"):
+                    del errs[i]["data_hash"]
 
     @staticmethod
     def bytes_to_hex_str(byts):

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <block>
-  <name>equisat_telemetry_parser</name>
+  <name>EQUiSat Telemetry Parser</name>
   <key>equisat_decoder_equisat_telemetry_parser</key>
   <category>[equisat_decoder]</category>
   <import>import equisat_decoder</import>

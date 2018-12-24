@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <block>
-  <name>equisat_4fsk_block_decode</name>
+  <name>EQUiSat 4FSK Block Decoder</name>
   <key>equisat_decoder_equisat_4fsk_block_decode</key>
   <category>[equisat_decoder]</category>
   <import>import equisat_decoder</import>
-  <make>equisat_decoder.equisat_4fsk_block_decode($msg_size)</make>
+  <make>equisat_decoder.equisat_4fsk_block_decode($msg_size, $print_packets)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -15,6 +15,13 @@
     <key>msg_size</key>
     <value>255</value>
     <type>int</type>
+  </param>
+
+  <param>
+    <name>Print Packets</name>
+    <key>print_packets</key>
+    <value>False</value>
+    <type>bool</type>
   </param>
 
   <!-- Make one 'sink' node per input. Sub-nodes:

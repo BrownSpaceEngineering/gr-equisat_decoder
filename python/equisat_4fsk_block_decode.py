@@ -40,7 +40,7 @@ class equisat_4fsk_block_decode(gr.basic_block):
     # number of excess metadata bytes in the first block
     HEADER_BLOCK_BYTES = 5
 
-    def __init__(self, msg_size):
+    def __init__(self, msg_size, print_packets=False):
         gr.basic_block.__init__(self,
             name="equisat_4fsk_block_decode",
             in_sig=[],
@@ -49,6 +49,7 @@ class equisat_4fsk_block_decode(gr.basic_block):
         self.msg_size = msg_size
         # need enough blocks to contain a complete message (including header bytes on front)
         self.total_num_blocks = self.get_required_num_blocks(msg_size)
+        self.print_packets = print_packets
 
         self.message_port_register_in(pmt.intern('in'))
         self.set_msg_handler(pmt.intern('in'), self.handle_msg)
@@ -82,7 +83,9 @@ class equisat_4fsk_block_decode(gr.basic_block):
         # ignore first few bytes of first block as these contain packet metadata
         # cut off the rest to the requested length
         byts_arr = array.array('B', byts[self.HEADER_BLOCK_BYTES:self.HEADER_BLOCK_BYTES + self.msg_size])
-        print(self._bytearr_to_string(byts_arr))
+        if self.print_packets:
+            print(self._bytearr_to_string(byts_arr))
+
         self.message_port_pub(pmt.intern('out'), pmt.cons(pmt.get_PMT_NIL(), pmt.init_u8vector(len(byts_arr), byts_arr)))
         self.num_packets += 1
 

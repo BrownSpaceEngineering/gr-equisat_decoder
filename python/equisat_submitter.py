@@ -55,38 +55,27 @@ class equisat_submitter(gr.sync_block):
         self.api_key = api_key
         self.api_route = self.BSE_API_ROUTE # TODO
 
-        # since we have multiple inputs, keep queues and pop off sections
-        # when we have a (corresponding) one of each (i.e. equal length queues)
-        self.raw_queue = []
-        self.corrected_queue = []
+        self.message_port_register_in(pmt.intern('in'))
+        self.set_msg_handler(pmt.intern('in'), self.handle_msg)
 
-        self.message_port_register_in(pmt.intern('raw'))
-        self.message_port_register_in(pmt.intern('corrected'))
-        self.set_msg_handler(pmt.intern('raw'), self.handle_raw_msg)
-        self.set_msg_handler(pmt.intern('corrected'), self.handle_corrected_msg)
-
-    def handle_raw_msg(self, msg_pmt):
+    def handle_msg(self, msg_pmt):
+        meta = pmt.car(msg_pmt)
         msg = pmt.cdr(msg_pmt)
         if not pmt.is_u8vector(msg):
             print "[ERROR] Received invalid message type. Expected u8vector"
             return
 
-        self.raw_queue.append(equisat_telemetry_parser.bytes_to_hex_str(pmt.u8vector_elements(msg)))
-        self.submit_if_ready()
+        raw_vec = pmt.dict_ref(meta, pmt.intern("raw"), pmt.get_PMT_NIL())
+        if raw_vec != pmt.get_PMT_NIL() and pmt.is_u8vector(raw_vec):
+            raw = equisat_telemetry_parser.bytes_to_hex_str(
+                pmt.u8vector_elements(raw_vec))
+        else:
+            print "[WARNING] No raw field provided in PDU; not publishing raw transmission"
+            raw = None
 
-    def handle_corrected_msg(self, msg_pmt):
-        msg = pmt.cdr(msg_pmt)
-        if not pmt.is_u8vector(msg):
-            print "[ERROR] Received invalid message type. Expected u8vector"
-            return
-
-        self.corrected_queue.append(equisat_telemetry_parser.bytes_to_hex_str(pmt.u8vector_elements(msg)))
-        self.submit_if_ready()
-
-    def submit_if_ready(self):
-        while len(self.raw_queue) == len(self.corrected_queue) and len(self.raw_queue) > 0:
-            self.submit_packet(self.raw_queue.pop(0), self.corrected_queue.pop(0))
-            time.sleep(self.MIN_REQUEST_PERIOD)
+        corrected = equisat_telemetry_parser.bytes_to_hex_str(pmt.u8vector_elements(msg))
+        self.submit_packet(raw, corrected)
+        time.sleep(self.MIN_REQUEST_PERIOD)
 
     def submit_packet(self, raw, corrected):
         if self.station_name is None or len(self.station_name) == 0 or \

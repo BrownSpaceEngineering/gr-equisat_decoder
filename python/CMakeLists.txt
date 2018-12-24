@@ -36,7 +36,8 @@ GR_PYTHON_INSTALL(
     equisat_4fsk_preamble_detect.py
     equisat_4fsk_block_decode.py
     equisat_telemetry_parser.py
-    equisat_submitter.py DESTINATION ${GR_PYTHON_DIR}/equisat_decoder
+    equisat_submitter.py
+    DESTINATION ${GR_PYTHON_DIR}/equisat_decoder
 )
 
 ########################################################################

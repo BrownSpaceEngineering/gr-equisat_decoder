@@ -22,5 +22,5 @@
 ########################################################################
 install(FILES
     api.h
-    DESTINATION include/equisat_decoder
+    equisat_fec_decoder.h DESTINATION include/equisat_decoder
 )
