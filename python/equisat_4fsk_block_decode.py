@@ -43,8 +43,8 @@ class equisat_4fsk_block_decode(gr.basic_block):
     def __init__(self, msg_size, print_packets=False):
         gr.basic_block.__init__(self,
             name="equisat_4fsk_block_decode",
-            in_sig=[],
-            out_sig=[])
+            in_sig=None,
+            out_sig=None)
 
         self.msg_size = msg_size
         # need enough blocks to contain a complete message (including header bytes on front)

@@ -42,6 +42,10 @@ class qa_equisat_4fsk_preamble_detect (gr_unittest.TestCase):
         self.assertFalse(equisat_4fsk_preamble_detect._is_preamble_cycle([-1000, -900, 900, 1000], 0, 0.1))
 
     def test_check_for_preamble(self):
+        inpt = [0]*equisat_4fsk_preamble_detect.MAX_PREAMBLE_LEN
+        found, start, end, high, low = equisat_4fsk_preamble_detect.check_for_preamble(inpt)
+        self.assertFalse(found)
+
         found, start, end, high, low = equisat_4fsk_preamble_detect.check_for_preamble(
             [0, 0.1, -0.1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 0, -1], 12, 0.1)
         self.assertTrue(found)
@@ -68,6 +72,46 @@ class qa_equisat_4fsk_preamble_detect (gr_unittest.TestCase):
         exp_syms = [3, 1, 0, 2, 1, 3, 2, 3, 0]
         syms = equisat_4fsk_preamble_detect.get_symbols(inpt, high, low)
         self.assertFloatTuplesAlmostEqual(syms, exp_syms)
+
+    def test_buffer_splits(self):
+        hist_len = equisat_4fsk_preamble_detect.HISTORY_LEN
+        min_pre_len = equisat_4fsk_preamble_detect.DEF_MIN_PREAMBLE_LEN
+        st_preamble = equisat_4fsk_preamble_detect.ST_WAIT_FOR_PREAMBLE
+        st_frame_sync = equisat_4fsk_preamble_detect.ST_IN_FRAME_SYNC
+        hist_fill = [0]*equisat_4fsk_preamble_detect.HISTORY_LEN
+
+        self.buffer_splits_helper([], 0, st_preamble)
+        self.buffer_splits_helper([-1, -1, 1, 1], 0, st_preamble)
+        self.buffer_splits_helper(hist_fill, 0, st_preamble)
+        # consumes preamble section
+        self.buffer_splits_helper(hist_fill + [-1, -1, 1, 1], 4, st_preamble)
+        # consumes random stuff
+        self.buffer_splits_helper(hist_fill + [1, -1, 1, -1], 4, st_preamble)
+        # skips perfectly aligned preamble
+        self.buffer_splits_helper([-1, -1, 1, 1] * (hist_len / 4), 0, st_preamble)
+        # consumes complete aligned preamble
+        self.buffer_splits_helper([-1, -1, 1, 1] * (hist_len / 4) + [1, -1, 1, -1, 1], 0, st_frame_sync)
+        # consumes longer preamble
+        self.buffer_splits_helper([-1, -1, 1, 1] * (hist_len / 4 + 2) + [1, -1, 1, -1, 1], 8, st_frame_sync)
+        # consumes shorter preamble
+        self.buffer_splits_helper([-1, -1, 1, 1] * (min_pre_len / 4) + [1, -1, 1, -1] * ((hist_len - min_pre_len) / 4), 0, st_frame_sync)
+        # consumes preambles split across history boundary
+        self.buffer_splits_helper([1, -1, 1, -1, 1] + [-1, -1, 1, 1] * (hist_len / 4 + 2) + [1, -1, 1, -1, 1], 5+8, st_frame_sync)
+        self.buffer_splits_helper([1, -1, 1, -1, 1] + [1, -1, 1, -1] * ((hist_len - min_pre_len) / 4) + [-1, -1, 1, 1] * (min_pre_len / 4) + [1, -1, 1, -1, 1], 5, st_frame_sync)
+        # consumes preambles past history
+        self.buffer_splits_helper(hist_fill + [-1, -1, 1, 1] * (min_pre_len / 4) + [1, -1, 1, -1, 1], min_pre_len, st_frame_sync)
+        self.buffer_splits_helper(hist_fill + [1, -1, 1, -1, 1] + [-1, -1, 1, 1] * (min_pre_len / 4) + [1, -1, 1, -1, 1], 5+min_pre_len, st_frame_sync)
+
+    def buffer_splits_helper(self, inpt, expected_consumed, new_state):
+        block = equisat_4fsk_preamble_detect(byte_buf_size=255)
+
+        # hacky substitute for consume so we can test what it's called with
+        def consume_test(index, num):
+            self.assertEqual(expected_consumed, num)
+
+        block.consume = consume_test
+        block.general_work([inpt], None)
+        self.assertEqual(new_state, block.state)
 
 
 if __name__ == '__main__':

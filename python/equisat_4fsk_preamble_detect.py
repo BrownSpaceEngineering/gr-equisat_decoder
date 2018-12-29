@@ -51,11 +51,15 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
 
     # packet layout constants
     SYMS_PER_BLOCK = equisat_4fsk_block_decode.SYMS_PER_BLOCK
-    FRAME_SYNC_LEN = 24  # symbols
+    FRAME_SYNC_LEN = 23  # symbols; TODO: when decoding, this works better than the true 24
 
     # largest possible/smallest acceptable preamble length (for starting to parse packet)
-    MAX_PREAMBLE_LEN = 185  # symbols
-    DEF_MIN_PREAMBLE_LEN = 96  # symbols; must be mult of 4
+    # must be mult of 4
+    MAX_PREAMBLE_LEN = 184  # symbols
+    DEF_MIN_PREAMBLE_LEN = 96  # symbols
+
+    # ensure that we have enough history in a buffer to store a full preamble
+    HISTORY_LEN = MAX_PREAMBLE_LEN
 
     # the maximum number of bytes to read and package after a preamble,
     # used to determine how many blocks to wait for (rounded up!)
@@ -64,10 +68,6 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
     # packet/preamble detection constants
     # percentage of first symbol in pair that second must be within to be "the same"
     DEF_MAX_SYMBOL_RATIO = 0.33
-
-    # the maximum buffer to keep unconsumed in case preamble is present
-    # should be larger than MAX_PREAMBLE_SIZE or we'll miss preambles
-    MAX_UNCONSUMED_SIZE = 2 * MAX_PREAMBLE_LEN
 
     # normalized threshold for cutoff between +/-3 and +/-1 symbols (where 1.0 is the +3 symbol)
     SYM_SEPERATION_THRESH = 0.66667 # this makes sense because +3=2400Hz and +1=800Hz (1/3)
@@ -82,6 +82,7 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
 
         self.max_symbol_ratio = max_symbol_ratio
         self.min_preamble_len = min_preamble_len
+        self.set_history(self.HISTORY_LEN)
 
         # the current state in the sequence of reading a packet
         self.state = self.ST_WAIT_FOR_PREAMBLE
@@ -113,6 +114,7 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
         # we've already read, plus possibly more if we didn't consume them,
         # but the rest are new (see set_history above)
         inpt = input_items[0]
+        new_inpt = inpt[self.HISTORY_LEN:]
 
         # finite state machine for different sections of packet
         if self.state is self.ST_WAIT_FOR_PREAMBLE:
@@ -128,22 +130,23 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
                 # setup packet state
                 self.high = high
                 self.low = low
-                # consume the complete preamble
-                self.consume(0, end-1)
+                # consume the component of the preamble that we haven't already (the part not in the history)
+                # note that end should always be greater than or equal to the history otherwise we would've done
+                # this already, but check that it's greater than zero anyways
+                new_preamble_len = max(0, end - self.HISTORY_LEN)
+                self.consume(0, new_preamble_len)
                 # now, try and start reading the frame sync
                 self.state = self.ST_IN_FRAME_SYNC
-
-            elif len(inpt) > self.MAX_UNCONSUMED_SIZE:
-                # generally, if no preamble was found, wait for more data (don't consume anything)
-                # HOWEVER, we don't want that buffer to get too big, so consume anything past the
-                # section where a preamble could be
-                self.consume(0, len(inpt) - self.MAX_PREAMBLE_LEN)
+            else:
+                # if no preamble was found, consume all the data (if there was a partial preamble,
+                # it will end up in the history)
+                self.consume(0, len(new_inpt))
 
             return 0
 
         elif self.state == self.ST_IN_FRAME_SYNC:
             # check if the new data is enough to complete the frame sync
-            if len(inpt) >= self.FRAME_SYNC_LEN:
+            if len(new_inpt) >= self.FRAME_SYNC_LEN:
                 # move onto blocks, starting past end of frame sync
                 self.state = self.ST_IN_BLOCKS
                 # consume the frame sync
@@ -154,8 +157,8 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
         elif self.state == self.ST_IN_BLOCKS:
             # copy the input into a buffer to transmit later, not consuming data that overflows that buffer
             blocks_buf_rem = len(self.blocks_buf) - self.blocks_buf_i
-            transferred = min(blocks_buf_rem, len(inpt))
-            self.blocks_buf[self.blocks_buf_i:self.blocks_buf_i+transferred] = inpt[:transferred]
+            transferred = min(blocks_buf_rem, len(new_inpt))
+            self.blocks_buf[self.blocks_buf_i:self.blocks_buf_i+transferred] = new_inpt[:transferred]
             self.blocks_buf_i += transferred
             self.consume(0, transferred)
 

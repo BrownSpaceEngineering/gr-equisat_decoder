@@ -70,7 +70,6 @@ class qa_equisat_4fsk_block_decode (gr_unittest.TestCase):
         packets = self.full_test_helper(data, 10, 350)
         self.assertEqual(len(packets), 12)
         for i in [0, 1, 2, 3, 4, 5, 7, 8, 9, 11]:
-            print(i)
             self.assertFloatTuplesAlmostEqual(packet_output_EQUiSatx50, packets[i])
 
     def test_actual_packets(self, ):
