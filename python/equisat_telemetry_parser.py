@@ -48,7 +48,9 @@ class equisat_telemetry_parser(gr.basic_block):
 
         parsed, errs = packetparse.parse_packet(packet)
         if len(errs) > 0:
-            print("[WARNING] packet parsing failed; errors: %s" % (", ".join(errs)))
+            print("[WARNING] packet parsing errors (database will not accept packet): %s" % (", ".join(errs)))
+        else:
+            print("[INFO] no packet parsing errors")
 
         # remove non-useful info
         self.clean_parsed(parsed)
@@ -65,7 +67,7 @@ class equisat_telemetry_parser(gr.basic_block):
         if parsed.has_key("data"):
             dat = parsed["data"]
             if type(dat) == list:
-                for i in range[len(dat)]:
+                for i in range(len(dat)):
                     if dat[i].has_key("data_hash"):
                         del dat[i]["data_hash"]
             elif type(dat) == dict and dat.has_key("data_hash"):

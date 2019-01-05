@@ -140,7 +140,7 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
             else:
                 # if no preamble was found, consume all the data (if there was a partial preamble,
                 # it will end up in the history)
-                self.consume(0, len(new_inpt))
+                self.consume(0, len(new_inpt)) # TODO: setting this to len(inpt) instead makes this block actually terminate
 
             return 0
 
