@@ -2,7 +2,7 @@
 <block>
   <name>EQUiSat Telemetry Parser</name>
   <key>equisat_decoder_equisat_telemetry_parser</key>
-  <category>[equisat_decoder]</category>
+  <category>[EQUiSat Decoder]</category>
   <import>import equisat_decoder</import>
   <make>equisat_decoder.equisat_telemetry_parser()</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.

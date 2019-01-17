@@ -2,7 +2,7 @@
 <block>
   <name>EQUiSat 4FSK Block Decoder</name>
   <key>equisat_decoder_equisat_4fsk_block_decode</key>
-  <category>[equisat_decoder]</category>
+  <category>[EQUiSat Decoder]</category>
   <import>import equisat_decoder</import>
   <make>equisat_decoder.equisat_4fsk_block_decode($msg_size, $print_packets)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.

@@ -2,7 +2,7 @@
 <block>
   <name>EQUiSat FEC Decoder</name>
   <key>equisat_decoder_equisat_fec_decoder</key>
-  <category>[equisat_decoder]</category>
+  <category>[EQUiSat Decoder]</category>
   <import>import equisat_decoder</import>
   <make>equisat_decoder.equisat_fec_decoder()</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
