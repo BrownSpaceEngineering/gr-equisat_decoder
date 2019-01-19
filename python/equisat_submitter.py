@@ -23,6 +23,7 @@ from gnuradio import gr
 import pmt
 import time
 import requests
+import datetime
 from equisat_telemetry_parser import equisat_telemetry_parser
 
 class equisat_submitter(gr.sync_block):
@@ -40,7 +41,8 @@ class equisat_submitter(gr.sync_block):
     # minimum time between packet submits
     MIN_REQUEST_PERIOD = 1
 
-    def __init__(self, station_name, api_key, api_route=BSE_API_ROUTE):
+    def __init__(self, station_name, api_key, latitude, longitude, initial_timestamp,
+                 api_route=BSE_API_ROUTE, source_app="gr-equisat_decoder"):
         gr.sync_block.__init__(self,
                                name="equisat_submitter",
                                in_sig=[],
@@ -52,8 +54,18 @@ class equisat_submitter(gr.sync_block):
             print("[WARNING] you need to specify an API key to publish to the BSE data server")
 
         self.station_name = station_name
+        self.latitude = latitude
+        self.longitude = longitude
         self.api_key = api_key
         self.api_route = self.BSE_API_ROUTE # TODO
+        self.source_app = source_app
+
+        dtformat = '%Y-%m-%d %H:%M:%S'
+        if initial_timestamp == "":
+            self.initial_timestamp = None
+        else:
+            datetime.datetime.strptime(initial_timestamp, dtformat)
+        self.start_timestamp = datetime.datetime.utcnow()
 
         self.message_port_register_in(pmt.intern('in'))
         self.set_msg_handler(pmt.intern('in'), self.handle_msg)
@@ -83,10 +95,23 @@ class equisat_submitter(gr.sync_block):
             print("[WARNING] not submitting to the BSE data server because no API key or station name provided")
             return
 
+        now = datetime.datetime.utcnow()
+        if self.initial_timestamp is None:
+            rx_time = now
+        else:
+            rx_time = self.initial_timestamp + (now - self.start_timestamp)
+
+        epoch = datetime.datetime(1970, 1, 1)
+        rx_time_posix = (rx_time - epoch).total_seconds() * 1000  # ms since 1970
+
         jsn = {
             "raw": raw,
             "corrected": corrected,
             "station_name": self.station_name,
+            "source": self.source_app,
+            "rx_time": rx_time_posix,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
             "secret": self.api_key
         }
 

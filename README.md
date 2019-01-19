@@ -43,9 +43,10 @@ You can publish good received packets to Brown Space Engineering's database serv
 
 - A station name/callsign
 - Your latitude/longitude (optional)
+- If you're replaying a recording, the UTC time it started at
 - An API key _TODO: instructions to generate_
  
-We'd really appreciate it if you send us your data!
+You can run `python equisat.py --help` for specifics. We'd really appreciate it if you send us your data!
  
 ## Pushing changes here to gr-satellites
 This repository is designed to easily integrate into [gr-satellites](https://github.com/daniestevez/gr-satellites), and has a script to do so.

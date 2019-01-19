@@ -4,7 +4,7 @@
   <key>equisat_decoder_equisat_submitter</key>
   <category>[EQUiSat Decoder]</category>
   <import>import equisat_decoder</import>
-  <make>equisat_decoder.equisat_submitter($station_name, $api_key, $api_route)</make>
+  <make>equisat_decoder.equisat_submitter($station_name, $api_key, $latitude, $longitude, $rec_start, $api_route, $source_app)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -23,9 +23,37 @@
   </param>
 
   <param>
+    <name>Latitude (N is +, S is -)</name>
+    <key>latitude</key>
+    <value>0</value>
+    <type>float</type>
+  </param>
+
+  <param>
+    <name>Longitude (W is -, E is +)</name>
+    <key>longitude</key>
+    <value>0</value>
+    <type>float</type>
+  </param>
+
+  <param>
+    <name>Start of recording UTC (blank for realtime)</name>
+    <key>rec_start</key>
+    <value></value>
+    <type>string</type>
+  </param>
+
+  <param>
     <name>API Route</name>
     <key>api_route</key>
     <value>http://api.brownspace.org/equisat/receive/raw</value>
+    <type>string</type>
+  </param>
+
+  <param>
+    <name>Sending application</name>
+    <key>source_app</key>
+    <value>gr-equisat_decoder</value>
     <type>string</type>
   </param>
 
