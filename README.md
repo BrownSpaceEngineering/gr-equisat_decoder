@@ -44,7 +44,7 @@ You can publish good received packets to Brown Space Engineering's database serv
 - A station name/callsign
 - Your latitude/longitude (optional)
 - If you're replaying a recording, the UTC time it started at
-- An API key _TODO: instructions to generate_
+- An API key. To generate one, run the `generate-api-key.sh` script in the root of the repository.
  
 You can run `python equisat.py --help` for specifics. We'd really appreciate it if you send us your data!
  
