@@ -6,7 +6,7 @@
     <key>options</key>
     <param>
       <key>author</key>
-      <value></value>
+      <value>Brown Space Engineering</value>
     </param>
     <param>
       <key>window_size</key>
@@ -22,7 +22,7 @@
     </param>
     <param>
       <key>description</key>
-      <value></value>
+      <value>EQUiSat FM Decoder</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -78,7 +78,7 @@
     </param>
     <param>
       <key>title</key>
-      <value></value>
+      <value>EQUiSat FM Decoder</value>
     </param>
   </block>
   <block>
@@ -1612,7 +1612,7 @@
     </param>
     <param>
       <key>label</key>
-      <value>Input sample rate</value>
+      <value>input sample rate</value>
     </param>
     <param>
       <key>short_id</key>
@@ -1655,7 +1655,7 @@
     </param>
     <param>
       <key>label</key>
-      <value>Input FM audio</value>
+      <value>input FM audio</value>
     </param>
     <param>
       <key>short_id</key>

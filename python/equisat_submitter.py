@@ -36,7 +36,7 @@ class equisat_submitter(gr.sync_block):
     """
 
     # route to telemetry input handler
-    BSE_API_ROUTE = "http://localhost:3000/equisat/receive/raw"#"http://api.brownspace.org/equisat/receive/raw"
+    BSE_API_ROUTE = "http://api.brownspace.org/equisat/receive/raw"
 
     # minimum time between packet submits
     MIN_REQUEST_PERIOD = 1
@@ -58,14 +58,14 @@ class equisat_submitter(gr.sync_block):
         self.longitude = longitude
         self.post_publicly = post_publicly
         self.api_key = api_key
-        self.api_route = self.BSE_API_ROUTE # TODO
+        self.api_route = api_route
         self.source_app = source_app
 
         dtformat = '%Y-%m-%d %H:%M:%S'
         if initial_timestamp == "":
             self.initial_timestamp = None
         else:
-            datetime.datetime.strptime(initial_timestamp, dtformat)
+            self.initial_timestamp = datetime.datetime.strptime(initial_timestamp, dtformat)
         self.start_timestamp = datetime.datetime.utcnow()
 
         self.message_port_register_in(pmt.intern('in'))
@@ -124,7 +124,7 @@ class equisat_submitter(gr.sync_block):
             elif r.status_code == requests.codes.ok:
                 print("Submitted packet from '%s' successfully" % self.station_name)
             else:
-                print("[ERROR] couldn't submit packet (%d): %s" % (r.status_code, r.text))
+                print("[WARNING] couldn't submit packet (%d): %s" % (r.status_code, r.text))
 
         except Exception as ex:
             print("[ERROR] couldn't submit packet: %s" % ex)

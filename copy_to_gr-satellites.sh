@@ -7,6 +7,7 @@
 # additional modifications:
 # - grc/CMakeLists.txt
 # - python/CMakeLists.txt
+# - python/__init__.py
 # - include/satellites/CMakeLists.txt
 # - lib/CMakeLists.txt
 # - swig/satellites.i

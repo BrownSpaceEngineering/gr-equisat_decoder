@@ -31,9 +31,11 @@ You can also open the flowgraph in [GNU Radio Companion](https://wiki.gnuradio.o
 These flowgraphs are:
 #### `apps/equisat.grc`
 
-This flowgraph listens for packets from a UDP audio stream from the GQRX SDR software. Usually all you need to do is click the "UDP" button in the bottom right of the GQRX interface, but if you have reconfigured GQRX you may need to specify a host and port to the Python script; see `python equisat.py --help` for how to.
+This flowgraph listens for packets from a UDP audio stream from the GQRX SDR software or other frontends (see below). Usually all you need to do is click the "UDP" button in the bottom right of the GQRX interface, but if you have reconfigured GQRX you may need to specify a host and port to the Python script; see `python equisat.py --help` for how to.
 
-If any complete packets are successfully received, they will be printed to the screen along with the data fields found in the packet. To automatically publish good packets to Brown Space Engineering's database, see below
+**If you don't have or don't want to use GQRX as a frontend**, check out [gr-frontends](https://github.com/daniestevez/gr-frontends) for alternative scripts that also stream over UDP. This repo provides frontends for SDRs, file sources, and other sources. 
+
+If any complete packets are successfully received, they will be printed to the screen along with the data fields found in the packet. To automatically publish good packets to Brown Space Engineering's database, see below.
 
 #### `apps/equisat_fm_input.grc` 
 
@@ -55,3 +57,8 @@ This repository is designed to easily integrate into [gr-satellites](https://git
 Run `./copy_to_gr-satellites <gr-satellites directory>` to copy and modify all the required files from gr-equisat_decoder to gr-satellites. 
 
 This also copies the flowgraph `apps/equisat_gr-satellites.grc`. Note that this flowgraph is very similar to `apps/equisat.grc`, but is NOT automatically derived from it. So if you improve/update `equisat.grc`, you will need to manually update `equisat_gr-satellites.grc` to correspond. This will likely require you to have gr-satellites installed because this flowgraph draws the EQUiSat decoder blocks from gr-satellites among other things.
+
+Main differences between `equisat.grc` and `equisat_gr-satellites.grc`
+- Use `gr-satellites` versions of blocks (important!) 
+- Add `print_timestamp` block before final Message Debug block
+- Switch "Sending application" parameter in EQUiSat Submitter block to be "gr-satellites"
