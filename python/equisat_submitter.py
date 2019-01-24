@@ -41,7 +41,7 @@ class equisat_submitter(gr.sync_block):
     # minimum time between packet submits
     MIN_REQUEST_PERIOD = 1
 
-    def __init__(self, station_name, api_key, latitude, longitude, initial_timestamp,
+    def __init__(self, station_name, api_key, latitude, longitude, initial_timestamp, post_publicly,
                  api_route=BSE_API_ROUTE, source_app="gr-equisat_decoder"):
         gr.sync_block.__init__(self,
                                name="equisat_submitter",
@@ -56,6 +56,7 @@ class equisat_submitter(gr.sync_block):
         self.station_name = station_name
         self.latitude = latitude
         self.longitude = longitude
+        self.post_publicly = post_publicly
         self.api_key = api_key
         self.api_route = self.BSE_API_ROUTE # TODO
         self.source_app = source_app
@@ -109,6 +110,7 @@ class equisat_submitter(gr.sync_block):
             "corrected": corrected,
             "station_name": self.station_name,
             "source": self.source_app,
+            "post_publicly": self.post_publicly,
             "rx_time": rx_time_posix,
             "latitude": self.latitude,
             "longitude": self.longitude,

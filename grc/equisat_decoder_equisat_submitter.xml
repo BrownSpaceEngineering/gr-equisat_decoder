@@ -4,7 +4,7 @@
   <key>equisat_decoder_equisat_submitter</key>
   <category>[EQUiSat Decoder]</category>
   <import>import equisat_decoder</import>
-  <make>equisat_decoder.equisat_submitter($station_name, $api_key, $latitude, $longitude, $rec_start, $api_route, $source_app)</make>
+  <make>equisat_decoder.equisat_submitter($station_name, $api_key, $latitude, $longitude, $rec_start, $post_publicly, $api_route, $source_app)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -41,6 +41,13 @@
     <key>rec_start</key>
     <value></value>
     <type>string</type>
+  </param>
+
+  <param>
+    <name>Post reception on Twitter (@equisat_bot)</name>
+    <key>post_publicly</key>
+    <value>False</value>
+    <type>bool</type>
   </param>
 
   <param>

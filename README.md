@@ -26,7 +26,7 @@ There are GNU Radio flowgraphs in `apps/` that you can "compile" and run as foll
 grcc <flowgraph>.grc
 python <flowgraph>.py # run the generated python file
 ```
-You can also open the flowgraph in GNU Radio Companion and click "generate" instead of using `grcc`
+You can also open the flowgraph in [GNU Radio Companion](https://wiki.gnuradio.org/index.php/GNURadioCompanion) and click "generate" instead of using `grcc`
 
 These flowgraphs are:
 #### `apps/equisat.grc`

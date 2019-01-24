@@ -93,7 +93,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(852, 188)</value>
+      <value>(840, 196)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -120,7 +120,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(948, 120)</value>
+      <value>(936, 128)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -147,7 +147,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(856, 120)</value>
+      <value>(844, 128)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -174,7 +174,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(948, 188)</value>
+      <value>(936, 196)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -836,7 +836,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(664, 618)</value>
+      <value>(660, 612)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -853,6 +853,10 @@
     <param>
       <key>longitude</key>
       <value>longitude</value>
+    </param>
+    <param>
+      <key>post_publicly</key>
+      <value>post_publicly</value>
     </param>
     <param>
       <key>source_app</key>
@@ -969,7 +973,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(188, 14)</value>
+      <value>(192, 14)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1123,6 +1127,49 @@
     <param>
       <key>value</key>
       <value>7355</value>
+    </param>
+  </block>
+  <block>
+    <key>parameter</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1044, 102)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>post_publicly</value>
+    </param>
+    <param>
+      <key>label</key>
+      <value>Whether to post any receptions publicly on Twitter using @equisat_bot</value>
+    </param>
+    <param>
+      <key>short_id</key>
+      <value></value>
+    </param>
+    <param>
+      <key>type</key>
+      <value></value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>False</value>
     </param>
   </block>
   <block>
