@@ -51,14 +51,3 @@ You can publish good received packets to Brown Space Engineering's database serv
  
 You can run `python equisat.py --help` for specifics. We'd really appreciate it if you send us your data!
  
-## Pushing changes here to gr-satellites
-This repository is designed to easily integrate into [gr-satellites](https://github.com/daniestevez/gr-satellites), and has a script to do so.
-
-Run `./copy_to_gr-satellites <gr-satellites directory>` to copy and modify all the required files from gr-equisat_decoder to gr-satellites. 
-
-This also copies the flowgraph `apps/equisat_gr-satellites.grc`. Note that this flowgraph is very similar to `apps/equisat.grc`, but is NOT automatically derived from it. So if you improve/update `equisat.grc`, you will need to manually update `equisat_gr-satellites.grc` to correspond. This will likely require you to have gr-satellites installed because this flowgraph draws the EQUiSat decoder blocks from gr-satellites among other things.
-
-Main differences between `equisat.grc` and `equisat_gr-satellites.grc`
-- Use `gr-satellites` versions of blocks (important!) 
-- Add `print_timestamp` block before final Message Debug block
-- Switch "Sending application" parameter in EQUiSat Submitter block to be "gr-satellites"
