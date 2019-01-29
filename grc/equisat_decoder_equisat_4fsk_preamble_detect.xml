@@ -27,7 +27,7 @@
   <param>
     <name>Min preamble length</name>
     <key>min_preamble_len</key>
-    <value>96</value>
+    <value>40</value>
     <type>int</type>
   </param>
 

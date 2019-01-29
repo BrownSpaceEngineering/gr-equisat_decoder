@@ -668,7 +668,7 @@
     </param>
     <param>
       <key>min_preamble_len</key>
-      <value>96</value>
+      <value>40</value>
     </param>
   </block>
   <block>
@@ -1171,12 +1171,6 @@
     <sink_block_id>blocks_message_debug_0</sink_block_id>
     <source_key>pdus</source_key>
     <sink_key>print</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>blocks_pdu_remove_1</source_block_id>
-    <sink_block_id>blocks_message_debug_0</sink_block_id>
-    <source_key>pdus</source_key>
-    <sink_key>print_pdu</sink_key>
   </connection>
   <connection>
     <source_block_id>blocks_short_to_float_0</source_block_id>

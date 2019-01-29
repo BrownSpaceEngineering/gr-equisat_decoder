@@ -77,7 +77,7 @@ class qa_equisat_4fsk_preamble_detect (gr_unittest.TestCase):
         hist_len = equisat_4fsk_preamble_detect.HISTORY_LEN
         min_pre_len = equisat_4fsk_preamble_detect.DEF_MIN_PREAMBLE_LEN
         st_preamble = equisat_4fsk_preamble_detect.ST_WAIT_FOR_PREAMBLE
-        st_frame_sync = equisat_4fsk_preamble_detect.ST_IN_FRAME_SYNC
+        st_frame_sync = equisat_4fsk_preamble_detect.ST_FRAME_SYNC_SEARCH
         hist_fill = [0]*equisat_4fsk_preamble_detect.HISTORY_LEN
 
         self.buffer_splits_helper([], 0, st_preamble)
@@ -106,10 +106,10 @@ class qa_equisat_4fsk_preamble_detect (gr_unittest.TestCase):
         block = equisat_4fsk_preamble_detect(byte_buf_size=255)
 
         # hacky substitute for consume so we can test what it's called with
-        def consume_test(index, num):
+        def consume_test(num):
             self.assertEqual(expected_consumed, num)
 
-        block.consume = consume_test
+        block.consume_each = consume_test
         block.general_work([inpt], None)
         self.assertEqual(new_state, block.state)
 

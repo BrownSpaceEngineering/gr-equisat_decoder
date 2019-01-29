@@ -46,17 +46,20 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
 
     # packet progress states
     ST_WAIT_FOR_PREAMBLE = 0  # searching for preamble or in incomplete preamble
-    ST_IN_FRAME_SYNC = 1  # iterating over useless frame sync symbols
+    ST_FRAME_SYNC_SEARCH = 1  # iterating over useless frame sync symbols
     ST_IN_BLOCKS = 2  # waiting to fill block buffer from incoming
 
     # packet layout constants
     SYMS_PER_BLOCK = equisat_4fsk_block_decode.SYMS_PER_BLOCK
-    FRAME_SYNC_LEN = 23  # symbols; TODO: when decoding, this works better than the true 24
+    FRAME_SYNC_SYMS = [0, 2, 0, 2, 0, 3, 1, 3, 1, 0, 2, 1, 3, 3, 0, 2, 1, 1, 2, 3, 0, 1, 2, 3]
+    # offsets: [-1, +1, -1, +1, -1, +3, -3, +3, -3, -1, +1, -3, +3, +3, -1, +1, -3, -3, +1, +3, -1, -3, +1, +3]
+    FRAME_SYNC_LEN = len(FRAME_SYNC_SYMS) # symbols;
+    MIN_FRAME_SYNC_MATCH = 0.5 # percent match
 
     # largest possible/smallest acceptable preamble length (for starting to parse packet)
     # must be mult of 4
     MAX_PREAMBLE_LEN = 184  # symbols
-    DEF_MIN_PREAMBLE_LEN = 96  # symbols
+    DEF_MIN_PREAMBLE_LEN = 40  # symbols
 
     # ensure that we have enough history in a buffer to store a full preamble
     HISTORY_LEN = MAX_PREAMBLE_LEN
@@ -82,12 +85,21 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
 
         self.max_symbol_ratio = max_symbol_ratio
         self.min_preamble_len = min_preamble_len
-        self.set_history(self.HISTORY_LEN)
+        # set_history uses one less than expected
+        self.set_history(self.HISTORY_LEN+1)
 
         # the current state in the sequence of reading a packet
         self.state = self.ST_WAIT_FOR_PREAMBLE
-        # when in ST_IN_FRAME_SYNC, this gives the # of SYMBOLS of frame sync section read so far
-        self.frame_sync_syms_read = 0
+
+        # how many symbols have been searched for a frame sync
+        # used to avoid searching for too long
+        self.frame_sync_searched = 0
+        # maximum number of symbols after detected preamble to search for frame sync in
+        # = max unread preamble length + frame sync length + some buffer
+        self.max_frame_sync_searched = self.MAX_PREAMBLE_LEN - self.min_preamble_len + self.FRAME_SYNC_LEN
+        # variables to keep track of best frame sync found
+        self.best_frame_sync_match = 0 # percent
+        self.best_frame_sync_index = 0
 
         # the current input values of the +2 and -2 symbols
         self.high = 0
@@ -102,7 +114,9 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
 
     def reset_state(self):
         self.state = self.ST_WAIT_FOR_PREAMBLE
-        self.frame_sync_syms_read = 0
+        self.frame_sync_searched = 0
+        self.best_frame_sync_match = 0
+        self.best_frame_sync_index = 0
         self.blocks_buf[:] = 0
         self.blocks_buf_i = 0
         self.high = 0
@@ -134,23 +148,39 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
                 # note that end should always be greater than or equal to the history otherwise we would've done
                 # this already, but check that it's greater than zero anyways
                 new_preamble_len = max(0, end - self.HISTORY_LEN)
-                self.consume(0, new_preamble_len)
+                self.consume_each(new_preamble_len)
                 # now, try and start reading the frame sync
-                self.state = self.ST_IN_FRAME_SYNC
+                self.state = self.ST_FRAME_SYNC_SEARCH
             else:
                 # if no preamble was found, consume all the data (if there was a partial preamble,
                 # it will end up in the history)
-                self.consume(0, len(new_inpt)) # TODO: setting this to len(inpt) instead makes this block actually terminate
+                self.consume_each(len(new_inpt)) # TODO: setting this to len(inpt) instead makes this block actually terminate
 
             return 0
 
-        elif self.state == self.ST_IN_FRAME_SYNC:
-            # check if the new data is enough to complete the frame sync
-            if len(new_inpt) >= self.FRAME_SYNC_LEN:
-                # move onto blocks, starting past end of frame sync
-                self.state = self.ST_IN_BLOCKS
-                # consume the frame sync
-                self.consume(0, self.FRAME_SYNC_LEN)
+        elif self.state == self.ST_FRAME_SYNC_SEARCH:
+            # search from the last search start to the end of the new input
+            for i in range(self.frame_sync_searched, len(new_inpt) - self.FRAME_SYNC_LEN):
+                cur_buf = self.get_symbols(new_inpt[i:i+self.FRAME_SYNC_LEN], self.high, self.low)
+
+                # look for the most accurate section of frame sync before we have to stop searching
+                # (wait until we're done searching otherwise we'll just take the first choice over the threshold)
+                percent_correct = sum(cur_buf == self.FRAME_SYNC_SYMS) / float(self.FRAME_SYNC_LEN)
+                if percent_correct >= self.best_frame_sync_match: # emphasize later ones
+                    self.best_frame_sync_match = percent_correct
+                    self.best_frame_sync_index = self.frame_sync_searched
+
+                elif self.frame_sync_searched > self.max_frame_sync_searched:
+                    # check percent match threshold once we've exhausted the  search space
+                    if self.best_frame_sync_match > self.MIN_FRAME_SYNC_MATCH:
+                        self.state = self.ST_IN_BLOCKS
+                        self.consume_each(self.best_frame_sync_index + self.FRAME_SYNC_LEN - 1)
+                    else:
+                        self.reset_state()
+                        self.consume_each(self.frame_sync_searched - 1)
+                    return 0
+
+                self.frame_sync_searched += 1
 
             return 0
 
@@ -160,7 +190,7 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
             transferred = min(blocks_buf_rem, len(new_inpt))
             self.blocks_buf[self.blocks_buf_i:self.blocks_buf_i+transferred] = new_inpt[:transferred]
             self.blocks_buf_i += transferred
-            self.consume(0, transferred)
+            self.consume_each(transferred)
 
             if self.blocks_buf_i >= len(self.blocks_buf): # should only equal
                 # now that we have a full buffer, convert to symbols

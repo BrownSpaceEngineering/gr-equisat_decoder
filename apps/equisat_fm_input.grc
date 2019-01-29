@@ -409,7 +409,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(384, 664)</value>
+      <value>(416, 664)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -739,7 +739,7 @@
     </param>
     <param>
       <key>print_packets</key>
-      <value>True</value>
+      <value>False</value>
     </param>
   </block>
   <block>
@@ -790,7 +790,7 @@
     </param>
     <param>
       <key>min_preamble_len</key>
-      <value>96</value>
+      <value>40</value>
     </param>
   </block>
   <block>
@@ -852,7 +852,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(424, 594)</value>
+      <value>(416, 594)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1659,7 +1659,7 @@
     </param>
     <param>
       <key>short_id</key>
-      <value></value>
+      <value>f</value>
     </param>
     <param>
       <key>type</key>
@@ -1693,12 +1693,6 @@
     <sink_block_id>blocks_message_debug_0</sink_block_id>
     <source_key>pdus</source_key>
     <sink_key>print</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>blocks_pdu_remove_0</source_block_id>
-    <sink_block_id>blocks_message_debug_0</sink_block_id>
-    <source_key>pdus</source_key>
-    <sink_key>print_pdu</sink_key>
   </connection>
   <connection>
     <source_block_id>blocks_throttle_0</source_block_id>
