@@ -33,7 +33,7 @@ These flowgraphs are:
 
 This flowgraph listens for packets from a UDP audio stream from the GQRX SDR software or other frontends (see below). Usually all you need to do is click the "UDP" button in the bottom right of the GQRX interface, but if you have reconfigured GQRX you may need to specify a host and port to the Python script; see `python equisat.py --help` for how to.
 
-**If you don't have or don't want to use GQRX as a frontend**, check out [gr-frontends](https://github.com/daniestevez/gr-frontends) for alternative scripts that also stream over UDP. This repo provides frontends for SDRs, file sources, and other sources. 
+**If you don't have or don't want to use GQRX as a frontend**, check out [gr-frontends](https://github.com/daniestevez/gr-frontends) for alternative scripts that also stream over UDP. This repo provides frontends for SDRs, file sources, and other sources. For Windows, it is possible to use SDR# with [this plugin](https://github.com/cpicoto/satnogstracker) to stream UDP audio and track the satellite. 
 
 If any complete packets are successfully received, they will be printed to the screen along with the data fields found in the packet. To automatically publish good packets to Brown Space Engineering's database, see below.
 
