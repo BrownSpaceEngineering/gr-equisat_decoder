@@ -41,6 +41,12 @@ If any complete packets are successfully received, they will be printed to the s
 
 This flowgraph does essentially the same decoding as `equisat.grc`, but requires that you specify a FM-demodulated wav file to use as input using the `--wavfile=` parameter. It also does not publish to our API yet. You may also need to specify `--sample-rate` if your file was not recorded at 48kHz.
 
+## Optimizing performance
+The decoder is still in development, and performance can benefit from some tuning to a specific setup. Here are some variables in the flowgraphs worth tuning:
+- `gain_mu` - this is a parameter for the MM Clock Recovery block for recovering the 4FSK symbols. [GNU Radio documentation](https://www.gnuradio.org/doc/doxygen/classgr_1_1digital_1_1clock__recovery__mm__cc.html) suggests that the optimal setting of this variable is dependent on the amplitude of the FM-demodulated audio coming into the flowgraph (i.e. the amplitude of the symbols). We've found that the correct tuning can make a significant difference in decoding quality. Generally decreasing the value is most helpful; overly large values can result in instability.
+ 
+- `Min premable length (EQUiSat 4FSK Preamble Detector)` - this is a parameter that controls the minimum length of preamble is required for the decoder to try and search for the sync word and subsequently decode the following blocks. Decreasing it can allow the decoder to find more packets, but it unlikely to improve the quality of the demodulated data.
+
 ## Publishing to EQUiSat's telemetry database
 You can publish good received packets to Brown Space Engineering's database server by specifying the following as command line arguments to the flowgraphs above:
 

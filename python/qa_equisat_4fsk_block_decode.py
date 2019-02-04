@@ -66,14 +66,14 @@ class qa_equisat_4fsk_block_decode (gr_unittest.TestCase):
         self.assertFloatTuplesAlmostEqual(packet_output_EQUiSatx50, packets[0])
 
     def test_many_full_packets(self, ):
-        data = self.read_wave("../samples/EQUiSatx50_all.wav") #  # 0to4_sweep_2_val
+        data = self.read_wave("../samples/4fsk_data_tests/EQUiSatx50_all.wav") #  # 0to4_sweep_2_val
         packets = self.full_test_helper(data, 10, 350)
         self.assertEqual(len(packets), 12)
         for i in [0, 1, 2, 3, 4, 5, 7, 8, 9, 11]:
             self.assertFloatTuplesAlmostEqual(packet_output_EQUiSatx50, packets[i])
 
     def test_actual_packets(self, ):
-        data = self.read_wave("../samples/4_equisat_packets_2nd_correct.wav")
+        data = self.read_wave("../samples/4fsk_data_tests/4_equisat_packets_2nd_correct.wav")
         packets = self.full_test_helper(data, 3, 255)
 
         # print(real_packets_hex[3])
