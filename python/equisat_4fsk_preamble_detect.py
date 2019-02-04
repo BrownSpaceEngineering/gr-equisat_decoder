@@ -136,17 +136,20 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
             # set up for start of packet if found
             found, start, end, high, low = self.check_for_preamble(inpt, self.min_preamble_len, self.max_symbol_ratio)
 
-            # if we found a preamble sequence, but it took the whole buffer
-            # (i.e. the last preamble sequence was within one sequence of the end)
-            # defer and try again next time in case there's more
-            # otherwise, continue
-            if found and end < len(inpt)-4:
+            if found and end >= len(inpt)-4:
+                # if we found a preamble sequence, but it took the whole buffer
+                # (i.e. the last preamble sequence was within one sequence of the end)
+                # defer and try again next time in case there's more
+                # (we're guaranteed to find it again and will likely have more data after it)
+                return 0
+            elif found:
+                # otherwise, continue:
                 # setup packet state
                 self.high = high
                 self.low = low
                 # consume the component of the preamble that we haven't already (the part not in the history)
-                # note that end should always be greater than or equal to the history otherwise we would've done
-                # this already, but check that it's greater than zero anyways
+                # note that end should almost always be greater than or equal to the history (otherwise we would've done
+                # this already), unless we're just coming from a frame sync search which happened to consume part of a preamble
                 new_preamble_len = max(0, end - self.HISTORY_LEN)
                 self.consume_each(new_preamble_len)
                 # now, try and start reading the frame sync
@@ -159,13 +162,15 @@ class equisat_4fsk_preamble_detect(gr.basic_block):
             return 0
 
         elif self.state == self.ST_FRAME_SYNC_SEARCH:
+            # convert to symbols for speed
+            new_inpt_syms = self.get_symbols(new_inpt, self.high, self.low)
             # search from the last search start to the end of the new input
             for i in range(self.frame_sync_searched, len(new_inpt) - self.FRAME_SYNC_LEN):
-                cur_buf = self.get_symbols(new_inpt[i:i+self.FRAME_SYNC_LEN], self.high, self.low)
+                cur_buf = new_inpt_syms[i:i+self.FRAME_SYNC_LEN]
 
                 # look for the most accurate section of frame sync before we have to stop searching
                 # (wait until we're done searching otherwise we'll just take the first choice over the threshold)
-                percent_correct = sum(cur_buf == self.FRAME_SYNC_SYMS) / float(self.FRAME_SYNC_LEN)
+                percent_correct = np.sum(cur_buf == self.FRAME_SYNC_SYMS) / float(self.FRAME_SYNC_LEN)
                 if percent_correct >= self.best_frame_sync_match: # emphasize later ones
                     self.best_frame_sync_match = percent_correct
                     self.best_frame_sync_index = self.frame_sync_searched
