@@ -47,15 +47,17 @@ The decoder is still in development, and performance can benefit from some tunin
  
 - `Min premable length (EQUiSat 4FSK Preamble Detector)` - this is a parameter that controls the minimum length of preamble is required for the decoder to try and search for the sync word and subsequently decode the following blocks. Decreasing it can allow the decoder to find more packets, but it is unlikely to improve the quality of the demodulated data, and setting it far too low can have an adverse impact on packet quality and detect preambles from noise.
 
-## Publishing to EQUiSat's telemetry database
-You can publish good received packets to Brown Space Engineering's database server by specifying the following as command line arguments to the flowgraphs above:
+## Publishing to telemetry databases
+You can publish good EQUiSat packets to both Brown Space Engineering's database server and [db.satnogs.org](https://db.satnogs.org) (extra dependency needed) by specifying the following as command line arguments to the flowgraphs above:
 
 - A station name/callsign
 - Your latitude/longitude (optional)
 - If you're replaying a recording, the UTC time it started at
 - An API key. To generate one, run the `generate-api-key.sh` script in the root of the repository.
  
-You can run `python equisat.py --help` for specifics. We'd really appreciate it if you send us your data!
+You can run `python equisat.py --help` for specifics. We'd really appreciate it if you send your data!
+
+To publish to db.satnogs.org, you'll need to install the [gr-satellites](https://github.com/daniestevez/gr-satellites) module to get the required telemetry forwarder block. 
  
 ## Understanding the telemetry
 You can find a description of all the fields presented in EQUiSat's telemetry in [this table](https://goo.gl/Kj9RkY) of signal names. The document also has tabs with descriptions of the satellite's error code types, error "locations" (essentially error "categories"), and detailed information on the bitwise message layout.
