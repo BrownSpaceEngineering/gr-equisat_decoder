@@ -57,3 +57,11 @@ You can publish good received packets to Brown Space Engineering's database serv
  
 You can run `python equisat.py --help` for specifics. We'd really appreciate it if you send us your data!
  
+## Understanding the telemetry
+You can find a description of all the fields presented in EQUiSat's telemetry in [this table](https://goo.gl/Kj9RkY) of signal names. The document also has tabs with descriptions of the satellite's error code types, error "locations" (essentially error "categories"), and detailed information on the bitwise message layout.
+
+You can also check out how those signals our presented on the [EQUiSat web app](http://equisat.brownspace.org/data) or our mobile apps, to get a better understanding of which systems we pay the most attention to.
+
+Finally, for an in-depth view, you can check out our [systems block diagram](https://drive.google.com/file/d/1Ciiw-N2CGWdwaaZogEM_bAGHjY7Ak4Yn/view) for a more complete view of where the signals come from.
+
+ 
