@@ -4,13 +4,14 @@ A GNU radio Out-Of-Tree Module and custom blocks to decode EQUiSat's 4FSK transc
 ## Dependencies
 - [GNU Radio](https://wiki.gnuradio.org/index.php/InstallingGR) (this repo is a GNU Radio "module")
 - [Swig](http://swig.org/download.html) (usually available in package managers; required for GNU Radio to generate Python bindings from C++)
+- [BrownSpaceEngineering/packetparse](https://github.com/BrownSpaceEngineering/packetparse) for extracting fields in EQUiSat's telemetry, included as a submodule (run `git submodule init` and `git submodule update`).
 - See `requirements.txt` for additional Python dependencies (run `pip install -r requirements.txt `)
 
 ## Build and Installation
 Run:
 ```
 pip install -r requirements.txt # if you haven't
-git submodule init # for BrownSpaceEngineering/packetparse
+git submodule init
 git submodule update
 mkdir build
 cd build
