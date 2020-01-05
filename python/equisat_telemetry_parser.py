@@ -21,7 +21,7 @@
 
 from gnuradio import gr
 import pmt
-import packetparse
+from . import packetparse
 import yaml
 import binascii
 
@@ -41,7 +41,7 @@ class equisat_telemetry_parser(gr.basic_block):
     def handle_msg(self, msg_pmt):
         msg = pmt.cdr(msg_pmt)
         if not pmt.is_u8vector(msg):
-            print "[ERROR] Received invalid message type. Expected u8vector"
+            print("[ERROR] Received invalid message type. Expected u8vector")
             return
 
         packet = self.bytes_to_hex_str(pmt.u8vector_elements(msg))
@@ -64,19 +64,19 @@ class equisat_telemetry_parser(gr.basic_block):
         if parsed is None:
             return
 
-        if parsed.has_key("data"):
+        if "data" in parsed:
             dat = parsed["data"]
             if type(dat) == list:
                 for i in range(len(dat)):
-                    if dat[i].has_key("data_hash"):
+                    if "data_hash" in dat[i]:
                         del dat[i]["data_hash"]
-            elif type(dat) == dict and dat.has_key("data_hash"):
+            elif type(dat) == dict and "data_hash" in dat:
                 del dat["data_hash"]
 
-        if parsed.has_key("errors"):
+        if "errors" in parsed:
             errs = parsed["errors"]
             for i in range(len(errs)):
-                if errs[i].has_key("data_hash"):
+                if "data_hash" in errs[i]:
                     del errs[i]["data_hash"]
 
     @staticmethod

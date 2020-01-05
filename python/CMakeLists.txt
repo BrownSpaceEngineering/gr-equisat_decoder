@@ -37,6 +37,8 @@ GR_PYTHON_INSTALL(
     equisat_4fsk_block_decode.py
     equisat_telemetry_parser.py
     equisat_submitter.py
+    qa_equisat_4fsk_block_decode.py
+    qa_equisat_4fsk_preamble_detect.py
     DESTINATION ${GR_PYTHON_DIR}/equisat_decoder
 )
 
@@ -49,4 +51,3 @@ set(GR_TEST_TARGET_DEPS gnuradio-equisat_decoder)
 set(GR_TEST_PYTHON_DIRS ${CMAKE_BINARY_DIR}/swig)
 GR_ADD_TEST(qa_equisat_4fsk_preamble_detect ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_equisat_4fsk_preamble_detect.py)
 GR_ADD_TEST(qa_equisat_4fsk_block_decode ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_equisat_4fsk_block_decode.py)
-GR_ADD_TEST(qa_equisat_submitter ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_equisat_submitter.py)

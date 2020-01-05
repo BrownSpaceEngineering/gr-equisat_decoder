@@ -24,7 +24,7 @@ import pmt
 import time
 import requests
 import datetime
-from equisat_telemetry_parser import equisat_telemetry_parser
+from .equisat_telemetry_parser import equisat_telemetry_parser
 
 class equisat_submitter(gr.sync_block):
     """
@@ -75,7 +75,7 @@ class equisat_submitter(gr.sync_block):
         meta = pmt.car(msg_pmt)
         msg = pmt.cdr(msg_pmt)
         if not pmt.is_u8vector(msg):
-            print "[ERROR] Received invalid message type. Expected u8vector"
+            print("[ERROR] Received invalid message type. Expected u8vector")
             return
 
         raw_vec = pmt.dict_ref(meta, pmt.intern("raw"), pmt.get_PMT_NIL())
@@ -83,7 +83,7 @@ class equisat_submitter(gr.sync_block):
             raw = equisat_telemetry_parser.bytes_to_hex_str(
                 pmt.u8vector_elements(raw_vec))
         else:
-            print "[WARNING] No raw field provided in PDU; not publishing raw transmission"
+            print("[WARNING] No raw field provided in PDU; not publishing raw transmission")
             raw = None
 
         corrected = equisat_telemetry_parser.bytes_to_hex_str(pmt.u8vector_elements(msg))

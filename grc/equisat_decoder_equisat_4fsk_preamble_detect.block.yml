@@ -1,0 +1,48 @@
+id: equisat_decoder_equisat_4fsk_preamble_detect
+label: EQUiSat 4FSK Preamble Detector
+category: '[EQUiSat Decoder]'
+
+templates:
+  imports: import equisat_decoder
+  make: equisat_decoder.equisat_4fsk_preamble_detect(${byte_buf_size},${max_symbol_ratio}, ${min_preamble_len})
+
+#  Make one 'parameters' list entry for every Parameter you want settable from the GUI.
+#     Sub-entries of dictionary:
+#     * id (makes the value accessible as \$keyname, e.g. in the make entry)
+#     * label
+#     * dtype 
+parameters:
+- id: byte_buf_size
+  label: Byte buffer size
+  dtype: int
+  default: 1200
+- id: max_symbol_ratio
+  label: Max symbol ratio
+  dtype: float
+  default: 0.33
+- id: min_preamble_len
+  label: Min preamble length
+  dtype: int
+  default: 40
+
+#  Make one 'inputs' list entry per input. Sub-entries of dictionary:
+#      * label (an identifier for the GUI)
+#      * domain
+#      * dtype
+#      * vlen
+#      * optional (set to 1 for optional inputs) 
+inputs:
+- label: in
+  domain: stream
+  dtype: float
+
+#  Make one 'outputs' list entry per output. Sub-entries of dictionary:
+#      * label (an identifier for the GUI)
+#      * dtype
+#      * vlen
+#      * optional (set to 1 for optional inputs) 
+outputs:
+- label: out
+  domain: message
+
+file_format: 1

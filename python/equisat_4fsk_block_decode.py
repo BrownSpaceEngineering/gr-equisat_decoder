@@ -60,12 +60,12 @@ class equisat_4fsk_block_decode(gr.basic_block):
     def handle_msg(self, msg_pmt):
         msg = pmt.cdr(msg_pmt)
         if not pmt.is_u8vector(msg):
-            print "[ERROR] Received invalid message type. Expected u8vector"
+            print("[ERROR] Received invalid message type. Expected u8vector")
             return
 
         syms = np.array(pmt.u8vector_elements(msg), dtype='uint8')
 
-        decodable_blocks = len(syms)/self.SYMS_PER_BLOCK
+        decodable_blocks = int(len(syms)/self.SYMS_PER_BLOCK)
         if decodable_blocks < self.total_num_blocks:
             # can't decode a partial block or a set of too few blocks
             print("[WARNING] Insufficient number of blocks provided; %d given but need %d for %d bytes" %

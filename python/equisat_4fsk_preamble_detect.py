@@ -24,7 +24,7 @@ from gnuradio import gr
 import pmt
 import array
 
-from equisat_4fsk_block_decode import equisat_4fsk_block_decode
+from .equisat_4fsk_block_decode import equisat_4fsk_block_decode
 
 class equisat_4fsk_preamble_detect(gr.basic_block):
     """

@@ -1,0 +1,55 @@
+id: equisat_decoder_equisat_submitter
+label: EQUiSat Submitter
+category: '[EQUiSat Decoder]'
+
+templates:
+  imports: import equisat_decoder
+  make: equisat_decoder.equisat_submitter(${station_name}, ${api_key}, ${latitude}, ${longitude}, ${rec_start}, ${post_publicly}, ${api_route}, ${source_app})
+
+#  Make one 'parameters' list entry for every Parameter you want settable from the GUI.
+#     Sub-entries of dictionary:
+#     * id (makes the value accessible as \$keyname, e.g. in the make entry)
+#     * label
+#     * dtype 
+parameters:
+- id: station_name
+  label: Station name
+  dtype: string
+- id: api_key
+  label: API Key
+  dtype: string
+- id: latitude
+  label: Latitude (N is +, S is -)
+  dtype: float
+  default: 0
+- id: longitude
+  label: Longitude (W is -, E is +)
+  dtype: float
+  default: 0
+- id: rec_start
+  label: Start of recording UTC (blank for realtime)
+  dtype: string
+- id: post_publicly
+  label: Post reception on Twitter (@equisat_bot)
+  dtype: bool
+  default: False
+- id: api_route
+  label: API Route
+  dtype: string
+  default: http://api.brownspace.org/equisat/receive/raw
+- id: source_app
+  label: Sending application
+  dtype: string
+  default: gr-equisat_decoder
+
+#  Make one 'inputs' list entry per input. Sub-entries of dictionary:
+#      * label (an identifier for the GUI)
+#      * domain
+#      * dtype
+#      * vlen
+#      * optional (set to 1 for optional inputs) 
+inputs:
+- label: in
+  domain: message
+
+file_format: 1

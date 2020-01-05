@@ -22,8 +22,8 @@
 import numpy as np
 from gnuradio import gr, gr_unittest
 from gnuradio import blocks
-from equisat_4fsk_block_decode import equisat_4fsk_block_decode
-from equisat_4fsk_preamble_detect import equisat_4fsk_preamble_detect
+from .equisat_4fsk_block_decode import equisat_4fsk_block_decode
+from .equisat_4fsk_preamble_detect import equisat_4fsk_preamble_detect
 from scipy.io import wavfile
 import pmt
 import time
@@ -58,7 +58,7 @@ class qa_equisat_4fsk_block_decode (gr_unittest.TestCase):
         syms = equisat_4fsk_preamble_detect.get_symbols(inpt_np, 9203, -9575)
         out = equisat_4fsk_block_decode.decode_block(syms)
         st = equisat_4fsk_block_decode._bytearr_to_string(out)
-        self.assertEquals(st, str_expected)
+        self.assertEqual(st, str_expected)
 
     def test_full_packet(self):
         packets = self.full_test_helper(packet_raw_EQUiSatx50, 1, 350)
@@ -69,7 +69,7 @@ class qa_equisat_4fsk_block_decode (gr_unittest.TestCase):
         data = self.read_wave("../samples/4fsk_data_tests/EQUiSatx50_all.wav") #  # 0to4_sweep_2_val
         packets = self.full_test_helper(data, 10, 350)
         self.assertEqual(len(packets), 12)
-        for i in [0, 1, 2, 3, 4, 5, 7, 8, 9, 11]:
+        for i in [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11]:
             self.assertFloatTuplesAlmostEqual(packet_output_EQUiSatx50, packets[i])
 
     def test_actual_packets(self, ):
@@ -123,4 +123,5 @@ class qa_equisat_4fsk_block_decode (gr_unittest.TestCase):
         return total
 
 if __name__ == '__main__':
-    gr_unittest.run(qa_equisat_4fsk_block_decode, "qa_equisat_4fsk_block_decode.xml")
+    # note: this won't work in python3
+    gr_unittest.run(qa_equisat_4fsk_block_decode)

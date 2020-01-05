@@ -1,0 +1,31 @@
+id: equisat_decoder_equisat_telemetry_parser
+label: EQUiSat Telemetry Parser
+category: '[EQUiSat Decoder]'
+
+templates:
+  imports: import equisat_decoder
+  make: equisat_decoder.equisat_telemetry_parser()
+
+#  Make one 'parameters' list entry for every Parameter you want settable from the GUI.
+#     Sub-entries of dictionary:
+#     * id (makes the value accessible as \$keyname, e.g. in the make entry)
+#     * label
+#     * dtype 
+
+#  Make one 'inputs' list entry per input. Sub-entries of dictionary:
+#      * label (an identifier for the GUI)
+#      * domain
+#      * dtype
+#      * vlen
+#      * optional (set to 1 for optional inputs) 
+inputs:
+- label: in
+  domain: message
+
+#  Make one 'outputs' list entry per output. Sub-entries of dictionary:
+#      * label (an identifier for the GUI)
+#      * dtype
+#      * vlen
+#      * optional (set to 1 for optional inputs) 
+
+file_format: 1

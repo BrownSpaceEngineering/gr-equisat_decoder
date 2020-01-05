@@ -8,6 +8,8 @@ A GNU radio Out-Of-Tree Module and custom blocks to decode EQUiSat's 4FSK transc
 - See `requirements.txt` for additional Python dependencies (run `pip install -r requirements.txt `)
 
 ## Build and Installation
+Note: make sure you're on the right equisat_decoder branch (master, maint-3.7, maint-3.8, etc.) to correspond with your GNU radio installation.
+
 Run:
 ```
 pip install -r requirements.txt # if you haven't
@@ -67,4 +69,10 @@ You can also check out how those signals our presented on the [EQUiSat web app](
 
 Finally, for an in-depth view, you can check out our [systems block diagram](https://drive.google.com/file/d/1Ciiw-N2CGWdwaaZogEM_bAGHjY7Ak4Yn/view) for a more complete view of where the signals come from.
 
- 
+## Running Tests
+The only way to run equisat decoder's tests is to run them using the unittest module after the package has been installed. However, this command must still be run in the `python/` directory:
+
+```
+cd python/
+python3 -m unittest equisat_decoder.qa_equisat_4fsk_block_decode equisat_decoder.qa_equisat_4fsk_preamble_detect
+```

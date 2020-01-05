@@ -20,11 +20,9 @@
 # 
 
 from gnuradio import gr, gr_unittest
-from equisat_4fsk_preamble_detect import equisat_4fsk_preamble_detect
-import qa_equisat_4fsk_block_decode
+from .equisat_4fsk_preamble_detect import equisat_4fsk_preamble_detect
+from .qa_equisat_4fsk_block_decode import packet_raw_EQUiSatx50
 import numpy as np
-
-packet_raw_EQUiSatx50 = qa_equisat_4fsk_block_decode.packet_raw_EQUiSatx50
 
 class qa_equisat_4fsk_preamble_detect (gr_unittest.TestCase):
 
@@ -88,19 +86,19 @@ class qa_equisat_4fsk_preamble_detect (gr_unittest.TestCase):
         # consumes random stuff
         self.buffer_splits_helper(hist_fill + [1, -1, 1, -1], 4, st_preamble)
         # skips perfectly aligned preamble
-        self.buffer_splits_helper([-1, -1, 1, 1] * (hist_len / 4), 0, st_preamble)
+        self.buffer_splits_helper([-1, -1, 1, 1] * int(hist_len / 4), 0, st_preamble)
         # consumes complete aligned preamble
-        self.buffer_splits_helper([-1, -1, 1, 1] * (hist_len / 4) + [1, -1, 1, -1, 1], 0, st_frame_sync)
+        self.buffer_splits_helper([-1, -1, 1, 1] * int(hist_len / 4) + [1, -1, 1, -1, 1], 0, st_frame_sync)
         # consumes longer preamble
-        self.buffer_splits_helper([-1, -1, 1, 1] * (hist_len / 4 + 2) + [1, -1, 1, -1, 1], 8, st_frame_sync)
+        self.buffer_splits_helper([-1, -1, 1, 1] * int(hist_len / 4 + 2) + [1, -1, 1, -1, 1], 8, st_frame_sync)
         # consumes shorter preamble
-        self.buffer_splits_helper([-1, -1, 1, 1] * (min_pre_len / 4) + [1, -1, 1, -1] * ((hist_len - min_pre_len) / 4), 0, st_frame_sync)
+        self.buffer_splits_helper([-1, -1, 1, 1] * int(min_pre_len / 4) + [1, -1, 1, -1] * int((hist_len - min_pre_len) / 4), 0, st_frame_sync)
         # consumes preambles split across history boundary
-        self.buffer_splits_helper([1, -1, 1, -1, 1] + [-1, -1, 1, 1] * (hist_len / 4 + 2) + [1, -1, 1, -1, 1], 5+8, st_frame_sync)
-        self.buffer_splits_helper([1, -1, 1, -1, 1] + [1, -1, 1, -1] * ((hist_len - min_pre_len) / 4) + [-1, -1, 1, 1] * (min_pre_len / 4) + [1, -1, 1, -1, 1], 5, st_frame_sync)
+        self.buffer_splits_helper([1, -1, 1, -1, 1] + [-1, -1, 1, 1] * int(hist_len / 4 + 2) + [1, -1, 1, -1, 1], 5+8, st_frame_sync)
+        self.buffer_splits_helper([1, -1, 1, -1, 1] + [1, -1, 1, -1] * int((hist_len - min_pre_len) / 4) + [-1, -1, 1, 1] * int(min_pre_len / 4) + [1, -1, 1, -1, 1], 5, st_frame_sync)
         # consumes preambles past history
-        self.buffer_splits_helper(hist_fill + [-1, -1, 1, 1] * (min_pre_len / 4) + [1, -1, 1, -1, 1], min_pre_len, st_frame_sync)
-        self.buffer_splits_helper(hist_fill + [1, -1, 1, -1, 1] + [-1, -1, 1, 1] * (min_pre_len / 4) + [1, -1, 1, -1, 1], 5+min_pre_len, st_frame_sync)
+        self.buffer_splits_helper(hist_fill + [-1, -1, 1, 1] * int(min_pre_len / 4) + [1, -1, 1, -1, 1], min_pre_len, st_frame_sync)
+        self.buffer_splits_helper(hist_fill + [1, -1, 1, -1, 1] + [-1, -1, 1, 1] * int(min_pre_len / 4) + [1, -1, 1, -1, 1], 5+min_pre_len, st_frame_sync)
 
     def buffer_splits_helper(self, inpt, expected_consumed, new_state):
         block = equisat_4fsk_preamble_detect(byte_buf_size=255)
@@ -115,4 +113,5 @@ class qa_equisat_4fsk_preamble_detect (gr_unittest.TestCase):
 
 
 if __name__ == '__main__':
-    gr_unittest.run(qa_equisat_4fsk_preamble_detect, "qa_equisat_4fsk_preamble_detect.xml")
+    # note: this won't work in python3
+    gr_unittest.run(qa_equisat_4fsk_preamble_detect)

@@ -26,19 +26,17 @@ description here (python/__init__.py).
 # import swig generated symbols into the equisat_decoder namespace
 try:
 	# this might fail if the module is python-only
-	from equisat_decoder_swig import *
+	from .equisat_decoder_swig import *
 except ImportError:
 	pass
 
 # import any pure python here
 
-from equisat_4fsk_preamble_detect import equisat_4fsk_preamble_detect
-from equisat_4fsk_block_decode import equisat_4fsk_block_decode
-import packetparse
-from equisat_telemetry_parser import equisat_telemetry_parser
-from equisat_submitter import equisat_submitter
+from .equisat_4fsk_preamble_detect import equisat_4fsk_preamble_detect
+from .equisat_4fsk_block_decode import equisat_4fsk_block_decode
+from . import packetparse
+from .equisat_telemetry_parser import equisat_telemetry_parser
+from .equisat_submitter import equisat_submitter
 
-
-
-
-#
+from .qa_equisat_4fsk_block_decode import qa_equisat_4fsk_block_decode
+from .qa_equisat_4fsk_preamble_detect import qa_equisat_4fsk_preamble_detect
