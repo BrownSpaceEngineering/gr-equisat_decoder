@@ -1,6 +1,13 @@
 # EQUiSat Decoder
 A GNU radio Out-Of-Tree Module and custom blocks to decode EQUiSat's 4FSK transceiver
 
+## Building & running using Docker
+Install [Docker](https://www.docker.com/products/docker-desktop) on your machine.
+
+Run `start_docker_grc.sh` from this directory and pass as an argument the flowgraph in `apps/` that you'd like to run (ex. `./start_docker_grc.sh apps/equisat.grc`).
+
+Take a look at `start_docker_grc.sh` and the `Dockerfile` for more details.
+
 ## Dependencies
 - [GNU Radio](https://wiki.gnuradio.org/index.php/InstallingGR) (this repo is a GNU Radio "module")
 - [Swig](http://swig.org/download.html) (usually available in package managers; required for GNU Radio to generate Python bindings from C++)
