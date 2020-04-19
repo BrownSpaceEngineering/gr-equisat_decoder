@@ -81,4 +81,6 @@ class equisat_telemetry_parser(gr.basic_block):
 
     @staticmethod
     def bytes_to_hex_str(byts):
-        return binascii.hexlify(bytearray(byts))
+        # note: decode to convert bytes to an ASCII string should always work
+        # because the byte chars are only digits or letters (hex)
+        return binascii.hexlify(bytearray(byts)).decode("ascii")
