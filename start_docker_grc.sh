@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# usage: start_grc_docker.sh <app under apps/ to run in GRC>
-IMG_NAME=bse/gr-equisat_decoder-maint3.7
+# see https://github.com/fcwu/docker-ubuntu-vnc-desktop for how to access GRC
+# basically, go to: http://localhost:8080 after launching this
+IMG_NAME=brownspaceengineering/gr-equisat_decoder:maint-3.7
 
 git submodule update --init --recursive
 
 docker build -t $IMG_NAME .
 docker run -it --rm \
     --name gr-equisat_decoder \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -e DISPLAY=$DISPLAY \
+    -p 8080:80 \
+    -p 5900:5900 \
     -v $(pwd)/apps:/root/gr-equisat_decoder/apps/ \
-    $IMG_NAME \
-    $1
+    $IMG_NAME
+    # to use with GQRX UDP: add --net=host

@@ -1,7 +1,14 @@
-FROM unlhcc/gnuradio:3.7.13.5
+FROM dorowu/ubuntu-desktop-lxde-vnc:bionic
 ARG DECODER_DIR=/root/gr-equisat_decoder/
 
-# install dependencies
+# install GNU Radio
+RUN add-apt-repository -y ppa:gnuradio/gnuradio-releases-3.7 \
+    && apt-get install -y gnuradio
+
+# install library and build tools
+RUN apt-get install -y python-pip cmake swig
+
+# install Python dependencies
 COPY requirements.txt ${DECODER_DIR}
 WORKDIR ${DECODER_DIR}
 RUN pip install -r requirements.txt
@@ -29,6 +36,10 @@ RUN mkdir build \
     && make install \
     && ldconfig
 
+# add shortcut to GNU Radio Companion
+RUN mkdir /root/Desktop \
+    && printf "[Desktop Entry]\nType=Application\nName=GNU Radio Companion\nExec=gnuradio-companion %%F" > /root/Desktop/grc.desktop
+
 VOLUME apps/
 
-ENTRYPOINT [ "gnuradio-companion" ]
+# keep entrypoint of root image

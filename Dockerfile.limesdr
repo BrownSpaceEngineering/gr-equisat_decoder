@@ -1,0 +1,8 @@
+FROM brownspaceengineering/gr-equisat_decoder:maint-3.7
+
+# Install LimeSuite and gr-limesdr
+RUN add-apt-repository -y ppa:myriadrf/drivers \
+    && apt-get install -y limesuite liblimesuite-dev limesuite-udev limesuite-images
+
+RUN add-apt-repository -y ppa:myriadrf/gnuradio \
+    && apt-get install -y gr-limesdr
