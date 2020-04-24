@@ -279,7 +279,7 @@ blocks:
     comment: ''
     latitude: latitude
     longitude: longitude
-    post_publicly: 'False'
+    post_publicly: post_publicly
     rec_start: rec_start
     source_app: gr-equisat_decoder
     station_name: station_name
@@ -397,17 +397,17 @@ blocks:
     comment: ''
     hide: none
     label: whether to post any receptions publicly on Twitter using @equisat_bot (set
-      to any value to post)
+      to 'True' to post)
     short_id: ''
     type: str
-    value: ''
+    value: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [1226, 14]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: rec_start
   id: parameter
   parameters:

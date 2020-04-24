@@ -56,7 +56,7 @@ class equisat_submitter(gr.sync_block):
         self.station_name = station_name
         self.latitude = latitude
         self.longitude = longitude
-        self.post_publicly = post_publicly
+        self.post_publicly = (post_publicly.lower() == "true" or post_publicly == True)
         self.api_key = api_key
         self.api_route = api_route
         self.source_app = source_app
@@ -104,6 +104,9 @@ class equisat_submitter(gr.sync_block):
 
         epoch = datetime.datetime(1970, 1, 1)
         rx_time_posix = (rx_time - epoch).total_seconds() * 1000  # ms since 1970
+
+        print("[INFO] submitting with settings: station_name: %s, lat/lon: %s,%s, post_publicly: %s, rx_time: %s" % (
+            self.station_name, self.latitude, self.longitude, self.post_publicly, rx_time))
 
         jsn = {
             "raw": raw,

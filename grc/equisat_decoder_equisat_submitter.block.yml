@@ -31,7 +31,7 @@ parameters:
   dtype: string
 - id: post_publicly
   label: Post reception on Twitter (@equisat_bot)
-  dtype: bool
+  dtype: string
   default: False
 - id: api_route
   label: API Route
