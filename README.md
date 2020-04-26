@@ -1,12 +1,7 @@
 # EQUiSat Decoder
 A GNU radio Out-Of-Tree Module and custom blocks to decode EQUiSat's 4FSK transceiver
 
-## Building & running using Docker
-Install [Docker](https://www.docker.com/products/docker-desktop) on your machine.
-
-Run `start_docker_grc.sh` from this directory and pass as an argument the flowgraph in `apps/` that you'd like to run (ex. `./start_docker_grc.sh apps/equisat.grc`).
-
-Take a look at `start_docker_grc.sh` and the `Dockerfile` for more details.
+[Docker Hub link](https://hub.docker.com/r/brownspaceengineering/gr-equisat_decoder)
 
 ## Dependencies
 - [GNU Radio](https://wiki.gnuradio.org/index.php/InstallingGR) (this repo is a GNU Radio "module")
@@ -27,6 +22,15 @@ make
 sudo make install
 sudo ldconfig
 ```
+
+## Building & Running using Docker
+Install [Docker](https://docs.docker.com/get-docker/) on your machine.
+
+Run `start_docker_grc.sh` from this directory, and visit http://localhost:8080 to view the Desktop of the Docker container. There you can run GNU Radio Companion and open flowgraphs from the `apps` directory here.
+
+This web interface uses noVNC and you can find more info on using it at [docker-ubuntu-vnc-desktop](https://github.com/fcwu/docker-ubuntu-vnc-desktop), the site for the base Docker image. See also our GNU Radio-related instructions at [gnuradio-companion-docker](https://github.com/BrownSpaceEngineering/gnuradio-companion-docker).
+
+Take a look at `start_docker_grc.sh` and the `Dockerfile` for more details.
 
 ## Running
 There are GNU Radio flowgraphs in `apps/` that you can "compile" and run as follows:
