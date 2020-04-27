@@ -2,7 +2,7 @@
 A GNU radio Out-Of-Tree Module and custom blocks to decode EQUiSat's 4FSK transceiver
 
 [Docker Hub link](https://hub.docker.com/r/brownspaceengineering/gr-equisat_decoder)
-
+ 
 ## Dependencies
 - [GNU Radio](https://wiki.gnuradio.org/index.php/InstallingGR) (this repo is a GNU Radio "module")
 - [Swig](http://swig.org/download.html) (usually available in package managers; required for GNU Radio to generate Python bindings from C++)
@@ -22,6 +22,54 @@ make
 sudo make install
 sudo ldconfig
 ```
+
+## Building & Running in Mac OS
+Download: (Unfortunately, there are a lot of things)
+- [xQuartz](https://www.xquartz.org)
+- [GitHub desktop](https://desktop.github.com)
+  Clone the following into GitHub desktop:
+    - [gr-equisat-decoder](https://github.com/BrownSpaceEngineering/gr-equisat_decoder/tree/maint-3.7)
+    - [packetparse](https://github.com/BrownSpaceEngineering/packetparse)
+- [Swig](http://swig.org/download.html)
+- [MacPorts](https://www.macports.org/install.php)
+   Follow instructions under “macOS Package (.pkg) Installer”
+- [Git and homebrew](https://git-scm.com/download/mac) to be able to run commands (eg: git)
+
+Navigate to gr-equisat_decoder (???) by cd-ing. In xQuartz terminal, run:
+```
+pip install -r requirements.txt # if you haven't
+git submodule init
+git submodule update
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+sudo ldconfig
+ ```
+
+Finally, get
+GNU Radio itself, by typing
+```
+ sudo port install gnuradio 
+ ```
+Into xQuartz terminal
+- Note: I can’t remember if it was this command or one previously, but I think this takes an ungodly amount of time to run on xQuartz (multiple hours)
+
+To check what version of GNU Radio was downloaded, type into the xQuartz terminal.
+```
+ gnuradio-config-info --version 
+ ```
+ 
+Make sure your version is the same as the one for gr-equisat-decoder. 
+To switch the gr-equisat-decoder version to 3.7, by cd-ing into gr-equisat_decoder and  running
+	git checkout maint-3.7 on your machine's terminal. (??? DCMAKE_INSTALL_PREFIX=/opt/local/)
+
+To run GNU Radio, type the following into your xQuartz terminal, and it should open GNU Radio.
+ ```
+ gnu-radio-companion
+ ```
+
 
 ## Building & Running using Docker
 Install [Docker](https://docs.docker.com/get-docker/) on your machine.
